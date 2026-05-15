@@ -1,0 +1,104 @@
+---
+export interface Props {
+  guestName: string;
+  rsvpToken: string;
+  currentStatus: string;
+  currentCount: number;
+  currentNotes: string | null;
+}
+const { guestName, rsvpToken, currentStatus, currentCount, currentNotes } = Astro.props;
+---
+
+<form id="rsvp-form" class="rsvp-card">
+  <h2>Will you be there?</h2>
+
+  <div class="field">
+    <label>Your name</label>
+    <p class="name-val">{guestName}</p>
+  </div>
+
+  <div class="field">
+    <label>Attending?</label>
+    <div class="toggle-row">
+      <label class="toggle">
+        <input type="radio" name="status" value="attending" required
+          checked={currentStatus !== 'declined'} />
+        <span>Yes, I'll be there! 🎉</span>
+      </label>
+      <label class="toggle">
+        <input type="radio" name="status" value="declined"
+          checked={currentStatus === 'declined'} />
+        <span>Sorry, can't make it</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="field" id="count-field">
+    <label for="guest_count">How many people (including you)?</label>
+    <input id="guest_count" name="guest_count" type="number" min="1" max="20" value={currentCount} />
+  </div>
+
+  <div class="field">
+    <label for="dietary_notes">Dietary restrictions / notes</label>
+    <textarea id="dietary_notes" name="dietary_notes" rows="3"
+      placeholder="Nut allergy, vegetarian, etc.">{currentNotes ?? ''}</textarea>
+  </div>
+
+  <button type="submit">Submit RSVP</button>
+  <div id="rsvp-feedback"></div>
+</form>
+
+<script define:vars={{ rsvpToken }}>
+  const form = document.getElementById('rsvp-form');
+  const countField = document.getElementById('count-field');
+
+  function syncCount() {
+    const status = form.querySelector('[name="status"]:checked')?.value;
+    countField.style.display = status === 'declined' ? 'none' : 'block';
+  }
+  form.querySelectorAll('[name="status"]').forEach((r) => r.addEventListener('change', syncCount));
+  syncCount();
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const payload = {
+      status: data.get('status'),
+      guest_count: parseInt(data.get('guest_count') || '1', 10),
+      dietary_notes: data.get('dietary_notes') || null,
+    };
+    const res = await fetch(`/api/rsvp/${rsvpToken}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const fb = document.getElementById('rsvp-feedback');
+    if (res.ok) {
+      form.querySelector('button').style.display = 'none';
+      fb.innerHTML = payload.status === 'attending'
+        ? '<p class="success">🎉 You\'re on the list! See you there.</p>'
+        : '<p class="success">Got it — sorry you can\'t make it!</p>';
+    } else {
+      const json = await res.json();
+      fb.innerHTML = `<p class="error">${json.error}</p>`;
+    }
+  });
+</script>
+
+<style>
+  .rsvp-card { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 2px 16px rgba(0,0,0,.08); }
+  h2 { font-size: 1.5rem; margin-bottom: 24px; }
+  .field { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
+  label { font-weight: 600; font-size: 14px; color: #444; }
+  .name-val { font-size: 1.1rem; font-weight: 700; }
+  .toggle-row { display: flex; gap: 12px; }
+  .toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 12px 20px; border: 2px solid #e5e7eb; border-radius: 10px; flex: 1; }
+  .toggle input[type="radio"] { width: 18px; height: 18px; accent-color: #6366f1; }
+  .toggle:has(input:checked) { border-color: #6366f1; background: #eef2ff; }
+  input[type="number"], textarea { padding: 10px 14px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; }
+  input:focus, textarea:focus { outline: none; border-color: #6366f1; }
+  button { width: 100%; background: #6366f1; color: white; border: none; padding: 14px; border-radius: 10px; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+  button:hover { background: #4f46e5; }
+  .success { color: #065f46; background: #d1fae5; padding: 14px; border-radius: 8px; margin-top: 12px; }
+  .error { color: #991b1b; background: #fee2e2; padding: 14px; border-radius: 8px; margin-top: 12px; }
+</style>
