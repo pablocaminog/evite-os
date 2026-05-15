@@ -23,6 +23,9 @@ pnpm-debug.log*
 # local dev secrets
 .dev.vars
 
+# Wrangler local state (D1 data, KV, etc.)
+.wrangler/
+
 # brainstorm/tooling artifacts
 .superpowers/
 

@@ -8,7 +8,7 @@ directory = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "evite-os"
-database_id = "8ed081e2-2a09-4152-aaac-f2046d599e92"
+database_id = "YOUR_D1_DATABASE_ID"
 
 [[r2_buckets]]
 binding = "IMAGE_BUCKET"
