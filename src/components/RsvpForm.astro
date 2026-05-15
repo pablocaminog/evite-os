@@ -80,7 +80,10 @@ const { guestName, rsvpToken, currentStatus, currentCount, currentNotes } = Astr
         : '<p class="success">Got it — sorry you can\'t make it!</p>';
     } else {
       const json = await res.json();
-      fb.innerHTML = `<p class="error">${json.error}</p>`;
+      const p = document.createElement('p');
+      p.className = 'error';
+      p.textContent = json.error;
+      fb.appendChild(p);
     }
   });
 </script>
