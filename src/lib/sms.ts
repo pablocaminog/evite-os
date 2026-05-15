@@ -8,6 +8,7 @@ export interface SmsBuildParams {
 export function buildInvitationSms(params: SmsBuildParams): string {
   const date = new Date(params.eventDate).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
+    timeZone: 'UTC',
   });
   return `${params.organizerName} invited you to "${params.partyTitle}" on ${date}. RSVP: ${params.rsvpUrl}`;
 }

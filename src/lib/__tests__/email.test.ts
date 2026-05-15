@@ -15,6 +15,21 @@ describe('buildInvitationEmail', () => {
     expect(subject).toContain('Dino Party');
   });
 
+  it('escapes HTML special chars in party title', () => {
+    const { subject, html } = buildInvitationEmail({
+      partyTitle: '<script>alert(1)</script>Party',
+      eventDate: '2026-06-15T14:00:00Z',
+      location: null,
+      description: null,
+      rsvpUrl: 'https://example.com/invite/abc',
+      organizerName: 'Pablo',
+      imageUrl: null,
+    });
+    expect(html).not.toContain('<script>');
+    expect(html).toContain('&lt;script&gt;');
+    expect(subject).toContain('<script>alert(1)</script>Party'); // subject is plain text, not HTML
+  });
+
   it('includes RSVP URL in html body', () => {
     const { html } = buildInvitationEmail({
       partyTitle: 'Dino Party',

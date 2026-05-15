@@ -1,5 +1,14 @@
 import { createMimeMessage } from 'mimetext';
 
+function escHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 export interface InvitationEmailParams {
   partyTitle: string;
   eventDate: string;
@@ -26,12 +35,12 @@ export function buildInvitationEmail(params: InvitationEmailParams): EmailConten
 <html>
 <body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
   ${params.imageUrl ? `<img src="${params.imageUrl}" alt="Party cover" style="width:100%;border-radius:12px;margin-bottom:24px">` : ''}
-  <h1 style="font-size:28px;margin-bottom:8px">${params.partyTitle}</h1>
-  <p style="color:#555;font-size:16px">${params.organizerName} invited you to a party!</p>
+  <h1 style="font-size:28px;margin-bottom:8px">${escHtml(params.partyTitle)}</h1>
+  <p style="color:#555;font-size:16px">${escHtml(params.organizerName)} invited you to a party!</p>
   <table style="margin:24px 0;border-collapse:collapse;width:100%">
     <tr><td style="padding:8px 0;color:#888;width:100px">When</td><td style="padding:8px 0">${dateStr}</td></tr>
-    ${params.location ? `<tr><td style="padding:8px 0;color:#888">Where</td><td style="padding:8px 0">${params.location}</td></tr>` : ''}
-    ${params.description ? `<tr><td style="padding:8px 0;color:#888;vertical-align:top">Details</td><td style="padding:8px 0">${params.description}</td></tr>` : ''}
+    ${params.location ? `<tr><td style="padding:8px 0;color:#888">Where</td><td style="padding:8px 0">${escHtml(params.location)}</td></tr>` : ''}
+    ${params.description ? `<tr><td style="padding:8px 0;color:#888;vertical-align:top">Details</td><td style="padding:8px 0">${escHtml(params.description)}</td></tr>` : ''}
   </table>
   <a href="${params.rsvpUrl}" style="display:inline-block;background:#6366f1;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-size:18px;font-weight:bold">
     RSVP Now
