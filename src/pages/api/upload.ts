@@ -20,7 +20,7 @@ export const POST: APIRoute = async (context) => {
   const data = await context.request.arrayBuffer();
 
   try {
-    const { key } = await uploadCoverImage(env.IMAGES, party.id, data, contentType);
+    const { key } = await uploadCoverImage(env.IMAGE_BUCKET, party.id, data, contentType);
     await updatePartyImageKey(env.DB, party.id, key);
     return new Response(
       JSON.stringify({ key, image_url: `${env.APP_URL}/images/${party.id}/cover` }),

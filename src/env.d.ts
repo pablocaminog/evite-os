@@ -3,7 +3,7 @@
 
 interface CloudflareEnv {
   DB: D1Database;
-  IMAGES: R2Bucket;
+  IMAGE_BUCKET: R2Bucket;
   SEND_EMAIL: SendEmail;
   FROM_PHONE: string;
   FROM_EMAIL: string;

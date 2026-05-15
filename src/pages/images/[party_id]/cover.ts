@@ -5,7 +5,7 @@ export const prerender = false;
 
 export const GET: APIRoute = async (context) => {
   const { env } = context.locals.runtime;
-  const obj = await getCoverImage(env.IMAGES, context.params.party_id!);
+  const obj = await getCoverImage(env.IMAGE_BUCKET, context.params.party_id!);
 
   if (!obj) {
     return new Response('Not found', { status: 404 });

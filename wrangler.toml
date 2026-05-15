@@ -11,7 +11,7 @@ database_name = "evite-os"
 database_id = "8ed081e2-2a09-4152-aaac-f2046d599e92"
 
 [[r2_buckets]]
-binding = "IMAGES"
+binding = "IMAGE_BUCKET"
 bucket_name = "evite-os-images"
 
 [[send_email]]
