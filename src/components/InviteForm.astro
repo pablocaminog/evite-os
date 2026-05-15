@@ -1,0 +1,66 @@
+---
+export interface Props {
+  partyId: string;
+  managementToken: string;
+}
+const { partyId, managementToken } = Astro.props;
+---
+
+<div class="invite-card">
+  <h3>Add guest</h3>
+  <form id="invite-form">
+    <div class="row">
+      <div class="field">
+        <label for="g-name">Name *</label>
+        <input id="g-name" name="name" type="text" required placeholder="Alice" />
+      </div>
+      <div class="field">
+        <label for="g-email">Email</label>
+        <input id="g-email" name="email" type="email" placeholder="alice@example.com" />
+      </div>
+      <div class="field">
+        <label for="g-phone">Phone</label>
+        <input id="g-phone" name="phone" type="tel" placeholder="+1 555 000 0000" />
+      </div>
+    </div>
+    <button type="submit">Add guest</button>
+    <p id="invite-feedback" class="feedback"></p>
+  </form>
+</div>
+
+<script define:vars={{ partyId, managementToken }}>
+  document.getElementById('invite-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const data = new FormData(form);
+    const payload = {
+      name: data.get('name'),
+      email: data.get('email') || undefined,
+      phone: data.get('phone') || undefined,
+    };
+    const res = await fetch(`/api/parties/${partyId}/guests`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Management-Token': managementToken },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    const fb = document.getElementById('invite-feedback');
+    if (!res.ok) { fb.textContent = json.error; return; }
+    fb.textContent = `✓ ${data.get('name')} added`;
+    form.reset();
+    setTimeout(() => location.reload(), 800);
+  });
+</script>
+
+<style>
+  .invite-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.06); margin-top: 32px; }
+  h3 { margin-bottom: 16px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  label { font-weight: 600; font-size: 13px; }
+  input { padding: 9px 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 15px; }
+  input:focus { outline: none; border-color: #6366f1; }
+  button { background: #6366f1; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .feedback { margin-top: 10px; font-size: 14px; color: #10b981; }
+  @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+</style>

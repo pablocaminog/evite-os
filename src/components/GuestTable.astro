@@ -1,0 +1,116 @@
+---
+import type { Guest, RsvpSummary } from '../lib/db';
+
+export interface Props {
+  guests: Guest[];
+  summary: RsvpSummary;
+  partyId: string;
+  managementToken: string;
+  appUrl: string;
+}
+const { guests, summary, partyId, managementToken, appUrl } = Astro.props;
+
+const statusColor: Record<string, string> = {
+  pending: '#f59e0b',
+  attending: '#10b981',
+  declined: '#ef4444',
+};
+---
+
+<div class="summary">
+  <div class="stat"><span class="num">{summary.attending}</span><span class="label">Attending</span></div>
+  <div class="stat"><span class="num">{summary.declined}</span><span class="label">Declined</span></div>
+  <div class="stat"><span class="num">{summary.pending}</span><span class="label">Pending</span></div>
+  <div class="stat"><span class="num">{summary.headcount}</span><span class="label">Total guests</span></div>
+</div>
+
+<div class="table-actions">
+  <button class="btn-primary" id="send-all-btn"
+    data-party-id={partyId}
+    data-token={managementToken}>
+    Send invites to pending
+  </button>
+  <button class="btn-secondary" id="export-btn"
+    data-party-id={partyId}
+    data-token={managementToken}>
+    Export CSV
+  </button>
+</div>
+
+{guests.length === 0
+  ? <p class="empty">No guests yet. Add some below.</p>
+  : (
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Contact</th><th>Status</th><th>Guests</th><th>Dietary</th><th>RSVP link</th></tr>
+        </thead>
+        <tbody>
+          {guests.map((g) => (
+            <tr>
+              <td>{g.name}</td>
+              <td class="contact">{g.email || g.phone}</td>
+              <td>
+                <span class="badge" style={`background:${statusColor[g.status]}22;color:${statusColor[g.status]}`}>
+                  {g.status}
+                </span>
+              </td>
+              <td>{g.guest_count}</td>
+              <td>{g.dietary_notes ?? '—'}</td>
+              <td><a href={`${appUrl}/invite/${g.rsvp_token}`} target="_blank" class="link">Open</a></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+<script>
+  document.getElementById('export-btn')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget as HTMLButtonElement;
+    const { partyId, token } = btn.dataset;
+    const res = await fetch(`/api/parties/${partyId}/export`, {
+      headers: { 'X-Management-Token': token! },
+    });
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'guests.csv'; a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('send-all-btn')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget as HTMLButtonElement;
+    const { partyId, token } = btn.dataset;
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    const res = await fetch(`/api/parties/${partyId}/invite`, {
+      method: 'POST',
+      headers: { 'X-Management-Token': token!, 'Content-Type': 'application/json' },
+      body: '{}',
+    });
+    const json = await res.json();
+    btn.textContent = `Done — ${json.sent} sent`;
+    setTimeout(() => location.reload(), 1200);
+  });
+</script>
+
+<style>
+  .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat { background: white; border-radius: 10px; padding: 16px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .num { display: block; font-size: 2rem; font-weight: 800; color: #6366f1; }
+  .label { font-size: 13px; color: #888; }
+  .table-actions { display: flex; gap: 12px; margin-bottom: 16px; }
+  .btn-primary { background: #6366f1; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+  .btn-secondary { background: white; border: 1.5px solid #ddd; padding: 9px 20px; border-radius: 8px; font-size: 14px; color: #444; cursor: pointer; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  th { background: #f8f9fa; padding: 12px 16px; text-align: left; font-size: 13px; color: #888; }
+  td { padding: 12px 16px; border-top: 1px solid #f0f0f0; font-size: 14px; }
+  .badge { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .link { color: #6366f1; text-decoration: none; }
+  .contact { max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+  .empty { color: #aaa; text-align: center; padding: 32px; }
+  @media (max-width: 600px) { .summary { grid-template-columns: 1fr 1fr; } }
+</style>
