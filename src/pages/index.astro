@@ -1,17 +1,68 @@
 ---
-
+export const prerender = true;
 ---
 
+<!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>evite-os — Free Party Invitations</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #fafafa; color: #1a1a1a; }
+    .hero { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 80px 24px; text-align: center; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 16px; }
+    .hero p { font-size: 1.25rem; opacity: 0.9; margin-bottom: 40px; max-width: 560px; margin-left: auto; margin-right: auto; }
+    .btn { display: inline-block; background: white; color: #6366f1; padding: 16px 40px; border-radius: 999px; font-size: 1.125rem; font-weight: 700; text-decoration: none; }
+    .btn:hover { background: #f0f0ff; }
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; max-width: 960px; margin: 64px auto; padding: 0 24px; }
+    .feature { background: white; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    .feature .icon { font-size: 2rem; margin-bottom: 12px; }
+    .feature h3 { font-size: 1.125rem; margin-bottom: 8px; }
+    .feature p { color: #555; line-height: 1.6; }
+    .cta { text-align: center; padding: 64px 24px; }
+    .cta a { background: #6366f1; color: white; padding: 16px 40px; border-radius: 999px; font-size: 1.125rem; font-weight: 700; text-decoration: none; }
+    footer { text-align: center; padding: 32px; color: #999; font-size: 14px; }
+    footer a { color: #999; }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>Party invitations,<br>without the bloat.</h1>
+    <p>Send invites by email or text, track RSVPs instantly. Free and open source.</p>
+    <a href="/party/new" class="btn">Create your party →</a>
+  </div>
+
+  <div class="features">
+    <div class="feature">
+      <div class="icon">📧</div>
+      <h3>Email &amp; SMS invites</h3>
+      <p>Send beautiful invitations by email or text message in seconds.</p>
+    </div>
+    <div class="feature">
+      <div class="icon">✅</div>
+      <h3>RSVP tracking</h3>
+      <p>See who's coming, total headcount, dietary needs — all in one dashboard.</p>
+    </div>
+    <div class="feature">
+      <div class="icon">🎨</div>
+      <h3>Custom cover images</h3>
+      <p>Upload any image. Use AI tools like ChatGPT or Gemini to generate the perfect party art.</p>
+    </div>
+    <div class="feature">
+      <div class="icon">🔒</div>
+      <h3>No accounts needed</h3>
+      <p>Organizers get a private link. Guests RSVP with one click. Zero signups.</p>
+    </div>
+  </div>
+
+  <div class="cta">
+    <a href="/party/new">Plan your next party →</a>
+  </div>
+
+  <footer>
+    <a href="https://github.com/evite-os/evite-os">Open source on GitHub</a> · Built with Cloudflare Workers
+  </footer>
+</body>
 </html>
