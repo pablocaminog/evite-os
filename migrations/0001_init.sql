@@ -22,7 +22,7 @@ CREATE TABLE guests (
   rsvp_token TEXT NOT NULL UNIQUE,
   status TEXT NOT NULL DEFAULT 'pending'
     CHECK (status IN ('pending', 'attending', 'declined')),
-  guest_count INTEGER NOT NULL DEFAULT 1,
+  guest_count INTEGER NOT NULL DEFAULT 1 CHECK (guest_count >= 1),
   dietary_notes TEXT,
   invited_at TEXT NOT NULL DEFAULT (datetime('now')),
   responded_at TEXT,
@@ -38,7 +38,6 @@ CREATE TABLE magic_links (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Only idx_guests_party_id is needed; UNIQUE constraints already create implicit indexes
+-- on rsvp_token, management_token, and magic_links.token
 CREATE INDEX idx_guests_party_id ON guests(party_id);
-CREATE INDEX idx_guests_rsvp_token ON guests(rsvp_token);
-CREATE INDEX idx_magic_links_token ON magic_links(token);
-CREATE INDEX idx_parties_management_token ON parties(management_token);
