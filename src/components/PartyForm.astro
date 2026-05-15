@@ -1,0 +1,74 @@
+---
+export interface Props {
+  error?: string;
+}
+const { error } = Astro.props;
+---
+
+<form id="party-form">
+  {error && <p class="error">{error}</p>}
+
+  <div class="field">
+    <label for="title">Party name *</label>
+    <input id="title" name="title" type="text" required placeholder="Dino Birthday Party" />
+  </div>
+
+  <div class="field">
+    <label for="organizer_name">Your name *</label>
+    <input id="organizer_name" name="organizer_name" type="text" required placeholder="Pablo" />
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="organizer_email">Your email (for link recovery)</label>
+      <input id="organizer_email" name="organizer_email" type="email" placeholder="you@example.com" />
+    </div>
+    <div class="field">
+      <label for="organizer_phone">Your phone</label>
+      <input id="organizer_phone" name="organizer_phone" type="tel" placeholder="+1 555 000 0000" />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="event_date">Date &amp; time *</label>
+      <input id="event_date" name="event_date" type="datetime-local" required />
+    </div>
+    <div class="field">
+      <label for="rsvp_deadline">RSVP deadline</label>
+      <input id="rsvp_deadline" name="rsvp_deadline" type="datetime-local" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="location">Location</label>
+    <input id="location" name="location" type="text" placeholder="123 Park Ave" />
+  </div>
+
+  <div class="field">
+    <label for="description">Details / message</label>
+    <textarea id="description" name="description" rows="4" placeholder="Come dressed as your favourite dinosaur!"></textarea>
+  </div>
+
+  <div class="field">
+    <label for="image">Cover image (JPEG, PNG, WebP — max 5MB)</label>
+    <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" />
+    <small>Tip: generate a custom image with AI using <a href="/docs/image-prompts" target="_blank">these prompts</a>.</small>
+  </div>
+
+  <button type="submit">Create Party</button>
+</form>
+
+<style>
+  form { display: flex; flex-direction: column; gap: 20px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  label { font-weight: 600; font-size: 14px; }
+  input, textarea { padding: 10px 14px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; }
+  input:focus, textarea:focus { outline: none; border-color: #6366f1; }
+  button { background: #6366f1; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; }
+  button:hover { background: #4f46e5; }
+  .error { background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px; }
+  small { color: #888; font-size: 13px; }
+  @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
+</style>
