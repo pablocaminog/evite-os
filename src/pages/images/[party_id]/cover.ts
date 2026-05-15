@@ -14,7 +14,7 @@ export const GET: APIRoute = async (context) => {
   return new Response(obj.body, {
     headers: {
       'Content-Type': obj.httpMetadata?.contentType ?? 'image/jpeg',
-      'Cache-Control': 'public, max-age=31536000, immutable',
+      'Cache-Control': 'public, max-age=3600, must-revalidate',
     },
   });
 };

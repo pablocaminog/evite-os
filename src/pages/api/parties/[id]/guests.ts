@@ -45,7 +45,6 @@ export const POST: APIRoute = async (context) => {
   return new Response(
     JSON.stringify({
       id,
-      rsvp_token,
       invite_url: `${env.APP_URL}/invite/${rsvp_token}`,
     }),
     { status: 201, headers: { 'Content-Type': 'application/json' } }

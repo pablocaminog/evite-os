@@ -39,7 +39,6 @@ export const POST: APIRoute = async (context) => {
   return new Response(
     JSON.stringify({
       id,
-      management_token,
       manage_url: `${env.APP_URL}/manage/${management_token}`,
     }),
     { status: 201, headers: { 'Content-Type': 'application/json' } }

@@ -20,7 +20,7 @@ export const POST: APIRoute = async (context) => {
   const allGuests = await getGuestsByPartyId(env.DB, party.id);
 
   const targets = body.guest_ids
-    ? allGuests.filter((g) => body.guest_ids!.includes(g.id))
+    ? allGuests.filter((g) => body.guest_ids!.includes(g.id) && g.status === 'pending')
     : allGuests.filter((g) => g.status === 'pending');
 
   const imageUrl = party.image_key
@@ -31,6 +31,7 @@ export const POST: APIRoute = async (context) => {
 
   for (const guest of targets) {
     const rsvpUrl = `${env.APP_URL}/invite/${guest.rsvp_token}`;
+    let anySent = false;
 
     if (guest.email) {
       try {
@@ -45,6 +46,7 @@ export const POST: APIRoute = async (context) => {
         });
         await sendEmail(env.SEND_EMAIL, env.FROM_EMAIL, guest.email, content);
         results.sent++;
+        anySent = true;
       } catch (err) {
         results.failed++;
         results.errors.push(`Email to ${guest.email}: ${(err as Error).message}`);
@@ -61,13 +63,16 @@ export const POST: APIRoute = async (context) => {
         });
         await sendSms(env.TELNYX_API_KEY, env.FROM_PHONE, guest.phone, text);
         results.sent++;
+        anySent = true;
       } catch (err) {
         results.failed++;
         results.errors.push(`SMS to ${guest.phone}: ${(err as Error).message}`);
       }
     }
 
-    await markGuestInvited(env.DB, guest.id);
+    if (anySent) {
+      await markGuestInvited(env.DB, guest.id);
+    }
   }
 
   return new Response(JSON.stringify(results), {
