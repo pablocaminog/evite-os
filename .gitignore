@@ -20,5 +20,11 @@ pnpm-debug.log*
 # macOS-specific files
 .DS_Store
 
+# local dev secrets
+.dev.vars
+
+# brainstorm/tooling artifacts
+.superpowers/
+
 # jetbrains setting folder
 .idea/
