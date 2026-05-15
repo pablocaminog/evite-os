@@ -1,0 +1,42 @@
+<h2>Architecture Approaches</h2>
+<p class="subtitle">Pick the structure for evite-os</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Full SSR Astro</h3>
+      <p>One Astro app, <code>@astrojs/cloudflare</code> adapter, SSR mode. API routes = Astro endpoints. D1/R2/Email/Telnyx accessed server-side. Single Worker + Static Assets deployment.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>One repo, one deploy</li><li>No CORS, no API glue</li><li>Simplest mental model</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>All pages dynamic (slower cold start)</li><li>Tighter Astro/API coupling</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Hybrid Astro (Recommended)</h3>
+      <p>Astro in <em>hybrid</em> mode — static pages pre-rendered (landing, docs), SSR pages dynamic (dashboard, RSVP, invitation). API routes as Astro endpoints. Best performance + flexibility.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Landing page instant (static)</li><li>Dynamic where needed</li><li>Still one deploy</li><li>Scales well as features grow</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Need to tag pages <code>export const prerender</code></li><li>Slightly more config</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Static Astro + Separate API Worker</h3>
+      <p>Astro builds pure static HTML/JS. Separate Hono or plain Worker handles all <code>/api/*</code>. Two Workers or one with routing. Full separation of frontend and backend.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Pure separation of concerns</li><li>API fully independent</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Two deploys to manage</li><li>CORS needed</li><li>RSVP pages need client-side fetch</li><li>Most complexity for little gain</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:1.5rem">⭐ Recommendation: <strong>B — Hybrid Astro</strong> — static landing + SSR where it matters, one deployment.</p>
