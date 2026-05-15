@@ -10,7 +10,9 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "generate-types": "wrangler types"
+    "generate-types": "wrangler types",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
