@@ -89,17 +89,10 @@ const { error, sitekey = '' } = Astro.props;
   <!-- Turnstile verification -->
   {sitekey && (
     <div>
-      <div class="flex justify-center mb-3">
-        <div class="cf-turnstile"
-          data-sitekey={sitekey}
-          data-theme="light"
-          data-size="flexible"
-          data-callback="onPartyTurnstileSuccess"
-          data-expired-callback="onPartyTurnstileExpired"
-          data-error-callback="onPartyTurnstileError">
-        </div>
+      <div class="flex justify-center mb-3 min-h-[65px] items-center">
+        <div id="party-ts-widget"></div>
       </div>
-      <p id="ts-hint" class="text-[11px] text-zinc-400 text-center mb-3">Complete the verification to create your party</p>
+      <p id="ts-hint" class="text-[11px] text-zinc-400 text-center mb-3">Waiting for verification…</p>
     </div>
   )}
 
@@ -111,29 +104,40 @@ const { error, sitekey = '' } = Astro.props;
 </form>
 
 <script>
-  // Turnstile token — shared via window so new.astro submit handler can read it
   window.__turnstileToken = null;
 
-  window.onPartyTurnstileSuccess = (token: string) => {
-    window.__turnstileToken = token;
+  // Explicit render — callbacks are closures, no timing issue
+  function initPartyWidget() {
+    const container = document.getElementById('party-ts-widget');
+    if (!container) return; // sitekey not configured — submit button stays enabled
+    if (!window.turnstile) { setTimeout(initPartyWidget, 50); return; }
+
     const btn = document.getElementById('party-submit-btn') as HTMLButtonElement;
     const hint = document.getElementById('ts-hint');
-    btn.disabled = false;
-    btn.classList.remove('opacity-50', 'cursor-not-allowed');
-    btn.classList.add('hover:bg-violet-700', 'hover:-translate-y-0.5', 'hover:shadow-lg', 'hover:shadow-violet-500/30');
-    if (hint) hint.classList.add('hidden');
-  };
-  window.onPartyTurnstileExpired = () => {
-    window.__turnstileToken = null;
-    const btn = document.getElementById('party-submit-btn') as HTMLButtonElement;
-    const hint = document.getElementById('ts-hint');
-    btn.disabled = true;
-    btn.classList.add('opacity-50', 'cursor-not-allowed');
-    if (hint) hint.classList.remove('hidden');
-  };
-  window.onPartyTurnstileError = () => {
-    window.__turnstileToken = null;
-  };
+
+    function enable() {
+      btn.disabled = false;
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+      btn.classList.add('hover:bg-violet-700', 'hover:-translate-y-0.5', 'hover:shadow-lg', 'hover:shadow-violet-500/30');
+      if (hint) hint.classList.add('hidden');
+    }
+    function disable(msg = 'Waiting for verification…') {
+      window.__turnstileToken = null;
+      btn.disabled = true;
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+      if (hint) { hint.textContent = msg; hint.classList.remove('hidden'); }
+    }
+
+    window.turnstile.render('#party-ts-widget', {
+      sitekey: (window as any).__partySitekey,
+      theme: 'light',
+      size: 'flexible',
+      callback(token: string) { window.__turnstileToken = token; enable(); },
+      'expired-callback'() { disable('Verification expired — refreshing…'); },
+      'error-callback'() { disable('Verification error — please refresh the page'); },
+    });
+  }
+  initPartyWidget();
 
   const imageInput = document.getElementById('image') as HTMLInputElement;
   const dropZone = document.getElementById('drop-zone')!;

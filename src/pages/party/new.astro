@@ -8,8 +8,9 @@ const sitekey = (env as any).TURNSTILE_SITE_KEY ?? '';
 ---
 
 <Layout title="Create a party — whosisdown">
-  <!-- Turnstile script -->
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer is:inline></script>
+  <!-- Pass sitekey to PartyForm script before Turnstile loads -->
+  <script define:vars={{ sitekey }} is:inline>window.__partySitekey = sitekey;</script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer is:inline></script>
 
   <div class="max-w-xl mx-auto px-6 py-16">
     <div class="mb-10">
