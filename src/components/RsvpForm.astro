@@ -3,16 +3,16 @@ export interface Props {
   guestName: string;
   rsvpToken: string;
   currentStatus: string;
-  currentCount: number;
+  currentAdults: number;
+  currentKids: number;
   currentNotes: string | null;
 }
-const { guestName, rsvpToken, currentStatus, currentCount, currentNotes } = Astro.props;
+const { guestName, rsvpToken, currentStatus, currentAdults, currentKids, currentNotes } = Astro.props;
 const attending = currentStatus !== 'declined';
 ---
 
 <div class="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden" id="rsvp-card">
 
-  <!-- Guest greeting -->
   <div class="px-6 pt-6 pb-4 border-b border-zinc-100">
     <p class="text-[13px] text-zinc-400 font-medium uppercase tracking-wide mb-0.5">Your invitation</p>
     <h2 class="text-xl font-extrabold text-zinc-900">{guestName}</h2>
@@ -20,7 +20,7 @@ const attending = currentStatus !== 'declined';
 
   <form id="rsvp-form" class="px-6 py-6 flex flex-col gap-5">
 
-    <!-- Attending toggle — big buttons -->
+    <!-- YES / NO -->
     <div>
       <p class="text-sm font-semibold text-zinc-700 mb-3">Will you be there?</p>
       <div class="grid grid-cols-2 gap-3">
@@ -37,23 +37,46 @@ const attending = currentStatus !== 'declined';
       </div>
     </div>
 
-    <!-- Guest count -->
-    <div id="count-field" class={!attending ? 'hidden' : ''}>
-      <label for="guest_count" class="text-sm font-semibold text-zinc-700 block mb-1.5">
-        How many people coming? <span class="text-zinc-400 font-normal">(including you)</span>
-      </label>
-      <div class="flex items-center gap-3">
-        <button type="button" id="count-minus"
-          class="w-9 h-9 rounded-full border border-zinc-200 text-zinc-600 font-bold text-lg hover:border-zinc-400 transition-colors flex items-center justify-center">
-          −
-        </button>
-        <input id="guest_count" name="guest_count" type="number" min="1" max="20" value={currentCount}
-          class="w-16 text-center border border-zinc-200 rounded-lg py-2 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent" />
-        <button type="button" id="count-plus"
-          class="w-9 h-9 rounded-full border border-zinc-200 text-zinc-600 font-bold text-lg hover:border-zinc-400 transition-colors flex items-center justify-center">
-          +
-        </button>
+    <!-- Adults + Kids steppers -->
+    <div id="count-fields" class={!attending ? 'hidden' : 'flex flex-col gap-3'}>
+      <p class="text-sm font-semibold text-zinc-700">How many people coming?</p>
+
+      <!-- Adults -->
+      <div class="flex items-center justify-between bg-zinc-50 rounded-xl px-4 py-3">
+        <div>
+          <p class="text-sm font-semibold text-zinc-800">Adults</p>
+          <p class="text-[12px] text-zinc-400">13 and older</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button type="button" data-target="adult_count" data-op="minus"
+            class="w-8 h-8 rounded-full border border-zinc-300 text-zinc-600 font-bold text-lg hover:border-violet-400 hover:text-violet-600 transition-colors flex items-center justify-center">−</button>
+          <input id="adult_count" name="adult_count" type="number" min="1" max="30" value={currentAdults}
+            class="w-10 text-center bg-transparent text-base font-bold text-zinc-900 focus:outline-none" readonly />
+          <button type="button" data-target="adult_count" data-op="plus"
+            class="w-8 h-8 rounded-full border border-zinc-300 text-zinc-600 font-bold text-lg hover:border-violet-400 hover:text-violet-600 transition-colors flex items-center justify-center">+</button>
+        </div>
       </div>
+
+      <!-- Kids -->
+      <div class="flex items-center justify-between bg-zinc-50 rounded-xl px-4 py-3">
+        <div>
+          <p class="text-sm font-semibold text-zinc-800">Kids</p>
+          <p class="text-[12px] text-zinc-400">12 and under</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button type="button" data-target="kid_count" data-op="minus"
+            class="w-8 h-8 rounded-full border border-zinc-300 text-zinc-600 font-bold text-lg hover:border-violet-400 hover:text-violet-600 transition-colors flex items-center justify-center">−</button>
+          <input id="kid_count" name="kid_count" type="number" min="0" max="30" value={currentKids}
+            class="w-10 text-center bg-transparent text-base font-bold text-zinc-900 focus:outline-none" readonly />
+          <button type="button" data-target="kid_count" data-op="plus"
+            class="w-8 h-8 rounded-full border border-zinc-300 text-zinc-600 font-bold text-lg hover:border-violet-400 hover:text-violet-600 transition-colors flex items-center justify-center">+</button>
+        </div>
+      </div>
+
+      <!-- Total pill -->
+      <p class="text-[12px] text-zinc-400 text-right pr-1">
+        Total: <span id="total-count" class="font-semibold text-zinc-600">{currentAdults + currentKids}</span> people
+      </p>
     </div>
 
     <!-- Dietary notes -->
@@ -62,7 +85,7 @@ const attending = currentStatus !== 'declined';
         Dietary restrictions or notes <span class="text-zinc-400 font-normal">(optional)</span>
       </label>
       <textarea id="dietary_notes" name="dietary_notes" rows="2"
-        placeholder="Nut allergy, vegetarian, etc."
+        placeholder="Nut allergy, vegetarian, gluten-free, etc."
         class="w-full px-3.5 py-2.5 border border-zinc-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none transition-shadow"
       >{currentNotes ?? ''}</textarea>
     </div>
@@ -78,15 +101,20 @@ const attending = currentStatus !== 'declined';
 
 <script define:vars={{ rsvpToken }}>
   const form = document.getElementById('rsvp-form');
-  const countField = document.getElementById('count-field');
+  const countFields = document.getElementById('count-fields');
   const lblYes = document.getElementById('lbl-yes');
   const lblNo = document.getElementById('lbl-no');
-  const countInput = document.getElementById('guest_count');
+  const totalEl = document.getElementById('total-count');
+
+  function getVal(id) { return parseInt(document.getElementById(id).value, 10) || 0; }
+  function setVal(id, v) { document.getElementById(id).value = String(v); updateTotal(); }
+  function updateTotal() { totalEl.textContent = String(getVal('adult_count') + getVal('kid_count')); }
 
   function syncUI() {
-    const status = form.querySelector('[name="status"]:checked')?.value;
-    const isAttending = status === 'attending';
-    countField.style.display = isAttending ? '' : 'none';
+    const isAttending = form.querySelector('[name="status"]:checked')?.value === 'attending';
+    countFields.classList.toggle('hidden', !isAttending);
+    countFields.classList.toggle('flex', isAttending);
+    countFields.classList.toggle('flex-col', isAttending);
 
     lblYes.classList.toggle('border-violet-500', isAttending);
     lblYes.classList.toggle('bg-violet-50', isAttending);
@@ -98,13 +126,16 @@ const attending = currentStatus !== 'declined';
 
   form.querySelectorAll('[name="status"]').forEach(r => r.addEventListener('change', syncUI));
 
-  document.getElementById('count-minus')?.addEventListener('click', () => {
-    const v = parseInt(countInput.value, 10);
-    if (v > 1) countInput.value = String(v - 1);
-  });
-  document.getElementById('count-plus')?.addEventListener('click', () => {
-    const v = parseInt(countInput.value, 10);
-    if (v < 20) countInput.value = String(v + 1);
+  form.querySelectorAll('button[data-op]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.target;
+      const min = id === 'adult_count' ? 1 : 0;
+      const max = 30;
+      let v = getVal(id);
+      if (btn.dataset.op === 'plus')  v = Math.min(max, v + 1);
+      if (btn.dataset.op === 'minus') v = Math.max(min, v - 1);
+      setVal(id, v);
+    });
   });
 
   form.addEventListener('submit', async (e) => {
@@ -116,7 +147,8 @@ const attending = currentStatus !== 'declined';
     const data = new FormData(form);
     const payload = {
       status: data.get('status'),
-      guest_count: parseInt(data.get('guest_count') || '1', 10),
+      adult_count: parseInt(data.get('adult_count') || '1', 10),
+      kid_count:   parseInt(data.get('kid_count')   || '0', 10),
       dietary_notes: data.get('dietary_notes') || null,
     };
 
@@ -130,16 +162,21 @@ const attending = currentStatus !== 'declined';
     if (res.ok) {
       form.querySelector('button[type="submit"]').style.display = 'none';
       const isYes = payload.status === 'attending';
+      const total = payload.adult_count + payload.kid_count;
       fb.innerHTML = `
         <div class="flex items-start gap-3 bg-${isYes ? 'emerald' : 'zinc'}-50 border border-${isYes ? 'emerald' : 'zinc'}-200 rounded-xl px-4 py-4">
           <span class="text-xl">${isYes ? '🎉' : '👋'}</span>
-          <p class="text-sm font-semibold text-${isYes ? 'emerald' : 'zinc'}-700">
-            ${isYes ? "You're on the list! See you there." : "Got it — sorry you can't make it!"}
-          </p>
+          <div>
+            <p class="text-sm font-semibold text-${isYes ? 'emerald' : 'zinc'}-700">
+              ${isYes ? `You're on the list! See you there.` : `Got it — sorry you can't make it!`}
+            </p>
+            ${isYes ? `<p class="text-xs text-${isYes ? 'emerald' : 'zinc'}-500 mt-0.5">${payload.adult_count} adult${payload.adult_count !== 1 ? 's' : ''}${payload.kid_count > 0 ? ` · ${payload.kid_count} kid${payload.kid_count !== 1 ? 's' : ''}` : ''} · ${total} total</p>` : ''}
+          </div>
         </div>`;
     } else {
-      const json = await res.json();
-      fb.innerHTML = `<div class="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">${json.error}</div>`;
+      let json = {};
+      try { json = await res.json(); } catch {}
+      fb.innerHTML = `<div class="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">${json.error ?? 'Something went wrong'}</div>`;
       btn.disabled = false;
       btn.textContent = 'Submit RSVP';
     }

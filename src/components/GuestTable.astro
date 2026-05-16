@@ -58,7 +58,8 @@ const { guests, summary, partyId, managementToken, appUrl } = Astro.props;
             <th class="text-left px-4 py-3 text-[12px] font-semibold text-zinc-400 uppercase tracking-wide">Name</th>
             <th class="text-left px-4 py-3 text-[12px] font-semibold text-zinc-400 uppercase tracking-wide">Contact</th>
             <th class="text-left px-4 py-3 text-[12px] font-semibold text-zinc-400 uppercase tracking-wide">Status</th>
-            <th class="text-left px-4 py-3 text-[12px] font-semibold text-zinc-400 uppercase tracking-wide">Guests</th>
+            <th class="text-left px-4 py-3 text-[12px] font-semibold text-zinc-400 uppercase tracking-wide">Adults</th>
+            <th class="text-left px-4 py-3 text-[12px] font-semibold text-zinc-400 uppercase tracking-wide">Kids</th>
             <th class="text-left px-4 py-3 text-[12px] font-semibold text-zinc-400 uppercase tracking-wide">Dietary</th>
             <th class="text-left px-4 py-3 text-[12px] font-semibold text-zinc-400 uppercase tracking-wide">Link</th>
           </tr>
@@ -79,7 +80,8 @@ const { guests, summary, partyId, managementToken, appUrl } = Astro.props;
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-700">pending</span>
                 )}
               </td>
-              <td class="px-4 py-3 text-zinc-600">{g.guest_count}</td>
+              <td class="px-4 py-3 text-zinc-600">{g.adult_count ?? g.guest_count}</td>
+              <td class="px-4 py-3 text-zinc-600">{g.kid_count ?? 0}</td>
               <td class="px-4 py-3 text-zinc-500">{g.dietary_notes ?? '—'}</td>
               <td class="px-4 py-3">
                 <a href={`${appUrl}/invite/${g.rsvp_token}`} target="_blank"

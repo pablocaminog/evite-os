@@ -24,6 +24,8 @@ export interface Guest {
   rsvp_token: string;
   status: 'pending' | 'attending' | 'declined';
   guest_count: number;
+  adult_count: number;
+  kid_count: number;
   dietary_notes: string | null;
   invited_at: string;
   responded_at: string | null;
@@ -191,17 +193,19 @@ export async function updateRsvp(
   db: D1Database,
   rsvpToken: string,
   status: 'attending' | 'declined',
-  guestCount: number,
+  adultCount: number,
+  kidCount: number,
   dietaryNotes: string | null
 ): Promise<void> {
   await db
     .prepare(
       `UPDATE guests
-       SET status = ?, guest_count = ?, dietary_notes = ?,
+       SET status = ?, adult_count = ?, kid_count = ?,
+           guest_count = ?, dietary_notes = ?,
            responded_at = datetime('now')
        WHERE rsvp_token = ?`
     )
-    .bind(status, guestCount, dietaryNotes, rsvpToken)
+    .bind(status, adultCount, kidCount, adultCount + kidCount, dietaryNotes, rsvpToken)
     .run();
 }
 

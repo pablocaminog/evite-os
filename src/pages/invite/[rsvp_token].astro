@@ -64,7 +64,8 @@ const eventDate = new Date(party.event_date).toLocaleDateString('en-US', {
       guestName={guest.name}
       rsvpToken={rsvp_token!}
       currentStatus={guest.status}
-      currentCount={guest.guest_count}
+      currentAdults={guest.adult_count ?? 1}
+      currentKids={guest.kid_count ?? 0}
       currentNotes={guest.dietary_notes}
     />
 

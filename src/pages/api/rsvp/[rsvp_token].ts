@@ -22,7 +22,7 @@ export const POST: APIRoute = async (context) => {
     });
   }
 
-  const { status, guest_count, dietary_notes } = body as Record<string, unknown>;
+  const { status, adult_count, kid_count, dietary_notes } = body as Record<string, unknown>;
 
   if (status !== 'attending' && status !== 'declined') {
     return new Response(
@@ -31,10 +31,11 @@ export const POST: APIRoute = async (context) => {
     );
   }
 
-  const count = status === 'attending' ? Math.max(1, Number(guest_count) || 1) : 1;
-  const notes = typeof dietary_notes === 'string' ? dietary_notes : null;
+  const adults = status === 'attending' ? Math.max(1, Number(adult_count) || 1) : 1;
+  const kids   = status === 'attending' ? Math.max(0, Number(kid_count)   || 0) : 0;
+  const notes  = typeof dietary_notes === 'string' ? dietary_notes : null;
 
-  await updateRsvp(env.DB, context.params.rsvp_token!, status, count, notes);
+  await updateRsvp(env.DB, context.params.rsvp_token!, status, adults, kids, notes);
 
   return new Response(JSON.stringify({ success: true }), {
     status: 200, headers: { 'Content-Type': 'application/json' },
