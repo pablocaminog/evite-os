@@ -41,14 +41,15 @@ export const POST: APIRoute = async (context) => {
       return Response.json({ error: 'Credential already registered' }, { status: 409 });
     }
 
+    const respTransports = (credential.response as any)?.transports;
     await saveCredential(env.DB, {
       user_id: user.id,
       credential_id: cred.id,
       public_key: toBase64url(cred.publicKey),
-      counter: cred.counter,
-      device_type: cred.deviceType,
+      counter: cred.counter ?? 0,
+      device_type: cred.deviceType ?? 'singleDevice',
       backed_up: cred.backedUp ? 1 : 0,
-      transports: JSON.stringify(credential.response && (credential.response as any).transports || []),
+      transports: JSON.stringify(Array.isArray(respTransports) ? respTransports : []),
     });
 
     const token = await createSession(env.SESSION, {
