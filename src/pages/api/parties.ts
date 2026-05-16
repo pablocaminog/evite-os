@@ -31,10 +31,18 @@ export const POST: APIRoute = async (context) => {
   const id = generateId();
   const management_token = generateToken();
 
-  await createParty(env.DB, {
-    id, management_token, title, event_date, organizer_name,
-    description, location, organizer_email, organizer_phone, rsvp_deadline,
-  });
+  try {
+    await createParty(env.DB, {
+      id, management_token, title, event_date, organizer_name,
+      description, location, organizer_email, organizer_phone, rsvp_deadline,
+    });
+  } catch (err) {
+    console.error('createParty failed:', err);
+    return new Response(
+      JSON.stringify({ error: 'Failed to create party. Please try again.' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
 
   return new Response(
     JSON.stringify({

@@ -103,7 +103,6 @@ export async function createParty(
   db: D1Database,
   party: NewParty
 ): Promise<void> {
-  await db.exec('PRAGMA foreign_keys = ON');
   await db
     .prepare(
       `INSERT INTO parties
@@ -162,7 +161,6 @@ export async function createGuest(
   db: D1Database,
   guest: NewGuest
 ): Promise<void> {
-  await db.exec('PRAGMA foreign_keys = ON');
   await db
     .prepare(
       `INSERT INTO guests (id, party_id, name, email, phone, rsvp_token)
@@ -211,7 +209,6 @@ export async function createMagicLink(
   db: D1Database,
   link: { id: string; party_id: string; token: string; expires_at: string }
 ): Promise<void> {
-  await db.exec('PRAGMA foreign_keys = ON');
   await db
     .prepare(
       `INSERT INTO magic_links (id, party_id, token, expires_at)
