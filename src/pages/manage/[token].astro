@@ -1,12 +1,12 @@
 ---
 export const prerender = false;
+import { env } from 'cloudflare:workers';
 import { getPartyByManagementToken, getGuestsByPartyId, getRsvpSummary, consumeMagicLink } from '../../lib/db';
 import Layout from '../../layouts/Layout.astro';
 import GuestTable from '../../components/GuestTable.astro';
 import InviteForm from '../../components/InviteForm.astro';
 
 const { token } = Astro.params;
-const { env } = Astro.locals.runtime;
 
 const ml = Astro.url.searchParams.get('ml');
 if (ml) {

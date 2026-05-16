@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
 import { verifyManagementToken, getGuestsByPartyId, markGuestInvited } from '../../../../lib/db';
 import { buildInvitationEmail, sendEmail } from '../../../../lib/email';
 import { buildInvitationSms, sendSms } from '../../../../lib/sms';
@@ -6,7 +7,6 @@ import { buildInvitationSms, sendSms } from '../../../../lib/sms';
 export const prerender = false;
 
 export const POST: APIRoute = async (context) => {
-  const { env } = context.locals.runtime;
   const token = context.request.headers.get('X-Management-Token') ?? '';
   const party = await verifyManagementToken(env.DB, context.params.id!, token);
 

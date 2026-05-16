@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
 import { getCoverImage } from '../../../lib/storage';
 
 export const prerender = false;
 
 export const GET: APIRoute = async (context) => {
-  const { env } = context.locals.runtime;
   const obj = await getCoverImage(env.IMAGE_BUCKET, context.params.party_id!);
 
   if (!obj) {

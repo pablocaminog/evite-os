@@ -1,11 +1,11 @@
 ---
 export const prerender = false;
+import { env } from 'cloudflare:workers';
 import { getGuestByRsvpToken, getPartyById } from '../../lib/db';
 import Layout from '../../layouts/Layout.astro';
 import RsvpForm from '../../components/RsvpForm.astro';
 
 const { rsvp_token } = Astro.params;
-const { env } = Astro.locals.runtime;
 
 const guest = await getGuestByRsvpToken(env.DB, rsvp_token!);
 if (!guest) return Astro.redirect('/');

@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
 import { getGuestByRsvpToken, updateRsvp } from '../../../lib/db';
 
 export const prerender = false;
 
 export const POST: APIRoute = async (context) => {
-  const { env } = context.locals.runtime;
   const guest = await getGuestByRsvpToken(env.DB, context.params.rsvp_token!);
 
   if (!guest) {

@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
 import { generateId, generateToken } from '../../lib/tokens';
 import { createMagicLink } from '../../lib/db';
 import { buildMagicLinkEmail, sendEmail } from '../../lib/email';
@@ -6,8 +7,6 @@ import { buildMagicLinkEmail, sendEmail } from '../../lib/email';
 export const prerender = false;
 
 export const POST: APIRoute = async (context) => {
-  const { env } = context.locals.runtime;
-
   let body: unknown;
   try {
     body = await context.request.json();

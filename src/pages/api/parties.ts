@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
 import { generateId, generateToken } from '../../lib/tokens';
 import { createParty } from '../../lib/db';
 
@@ -11,8 +12,6 @@ const json500 = (msg: string) =>
 
 export const POST: APIRoute = async (context) => {
   try {
-    const { env } = context.locals.runtime;
-
     let body: unknown;
     try {
       body = await context.request.json();

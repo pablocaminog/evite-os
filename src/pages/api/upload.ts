@@ -1,11 +1,11 @@
 import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
 import { verifyManagementToken, updatePartyImageKey } from '../../lib/db';
 import { uploadCoverImage } from '../../lib/storage';
 
 export const prerender = false;
 
 export const POST: APIRoute = async (context) => {
-  const { env } = context.locals.runtime;
   const token = context.request.headers.get('X-Management-Token') ?? '';
   const partyId = context.request.headers.get('X-Party-Id') ?? '';
 

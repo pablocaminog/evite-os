@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
 import { verifyManagementToken, getGuestsByPartyId } from '../../../../lib/db';
 
 export const prerender = false;
 
 export const GET: APIRoute = async (context) => {
-  const { env } = context.locals.runtime;
   const token = context.request.headers.get('X-Management-Token') ?? '';
   const party = await verifyManagementToken(env.DB, context.params.id!, token);
 
