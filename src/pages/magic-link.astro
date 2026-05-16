@@ -1,56 +1,59 @@
 ---
 export const prerender = false;
+import Layout from '../layouts/Layout.astro';
 ---
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Recover party link — evite-os</title>
-  <style>
-    body { font-family: system-ui, sans-serif; background: #fafafa; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
-    .card { background: white; border-radius: 16px; padding: 40px; box-shadow: 0 2px 16px rgba(0,0,0,.08); max-width: 440px; width: 100%; }
-    h1 { font-size: 1.5rem; margin-bottom: 8px; }
-    p { color: #666; margin-bottom: 24px; line-height: 1.6; }
-    .field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-    label { font-weight: 600; font-size: 14px; }
-    input { padding: 12px 14px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; }
-    input:focus { outline: none; border-color: #6366f1; }
-    button { width: 100%; background: #6366f1; color: white; border: none; padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; }
-    #feedback { margin-top: 16px; }
-    .success { color: #065f46; background: #d1fae5; padding: 14px; border-radius: 8px; font-size: 15px; }
-    .back { display: block; text-align: center; margin-top: 16px; color: #6366f1; text-decoration: none; font-size: 14px; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>Recover your party link</h1>
-    <p>Enter the email you used when creating your party. We'll send you a link to your dashboard.</p>
-    <form id="ml-form">
-      <div class="field">
-        <label for="email">Email address</label>
-        <input id="email" name="email" type="email" required placeholder="you@example.com" />
-      </div>
-      <button type="submit">Send link</button>
-    </form>
-    <div id="feedback"></div>
-    <a href="/" class="back">← Back to evite-os</a>
-  </div>
+<Layout title="Recover your party link — whosisdown">
+  <div class="min-h-[calc(100vh-56px)] flex items-center justify-center px-6 py-16">
+    <div class="w-full max-w-sm">
+      <div class="bg-white rounded-2xl border border-zinc-100 shadow-sm px-8 py-8">
+        <div class="mb-6">
+          <div class="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center text-xl mb-4">🔑</div>
+          <h1 class="text-xl font-extrabold text-zinc-900 mb-1">Recover your party link</h1>
+          <p class="text-sm text-zinc-500 leading-relaxed">
+            Enter the email you used when creating your party and we'll send you a link back to your dashboard.
+          </p>
+        </div>
 
-  <script>
-    document.getElementById('ml-form')!.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = (document.getElementById('email') as HTMLInputElement).value;
-      await fetch('/api/magic-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      (document.getElementById('ml-form') as HTMLFormElement).style.display = 'none';
-      document.getElementById('feedback')!.innerHTML =
-        '<div class="success">Check your inbox! If that email has a party, the link is on its way.</div>';
+        <form id="ml-form" class="flex flex-col gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label for="email" class="text-sm font-semibold text-zinc-700">Email address</label>
+            <input id="email" name="email" type="email" required placeholder="you@example.com"
+              class="w-full px-3.5 py-2.5 border border-zinc-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow" />
+          </div>
+          <button type="submit"
+            class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-lg text-[15px] transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-violet-500/30">
+            Send link
+          </button>
+        </form>
+
+        <div id="feedback" class="mt-4"></div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  document.getElementById('ml-form')!.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = (e.target as HTMLFormElement).querySelector('button')!;
+    btn.textContent = 'Sending…';
+    btn.disabled = true;
+
+    const email = (document.getElementById('email') as HTMLInputElement).value;
+    await fetch('/api/magic-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
     });
-  </script>
-</body>
-</html>
+
+    (document.getElementById('ml-form') as HTMLFormElement).style.display = 'none';
+    document.getElementById('feedback')!.innerHTML = `
+      <div class="flex items-start gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-4">
+        <span class="text-lg">📬</span>
+        <p class="text-sm text-emerald-700 font-medium leading-snug">
+          Check your inbox! If that email has a party, the link is on its way.
+        </p>
+      </div>`;
+  });
+</script>

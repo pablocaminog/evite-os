@@ -5,70 +5,92 @@ export interface Props {
 const { error } = Astro.props;
 ---
 
-<form id="party-form">
-  {error && <p class="error">{error}</p>}
+<form id="party-form" class="flex flex-col gap-5">
+  {error && (
+    <div class="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">{error}</div>
+  )}
 
-  <div class="field">
-    <label for="title">Party name *</label>
-    <input id="title" name="title" type="text" required placeholder="Dino Birthday Party" />
+  <div class="flex flex-col gap-1.5">
+    <label for="title" class="text-sm font-semibold text-zinc-700">Party name <span class="text-violet-600">*</span></label>
+    <input id="title" name="title" type="text" required placeholder="Dino Birthday Party"
+      class="w-full px-3.5 py-2.5 border border-zinc-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow" />
   </div>
 
-  <div class="field">
-    <label for="organizer_name">Your name *</label>
-    <input id="organizer_name" name="organizer_name" type="text" required placeholder="Pablo" />
+  <div class="flex flex-col gap-1.5">
+    <label for="organizer_name" class="text-sm font-semibold text-zinc-700">Your name <span class="text-violet-600">*</span></label>
+    <input id="organizer_name" name="organizer_name" type="text" required placeholder="Pablo"
+      class="w-full px-3.5 py-2.5 border border-zinc-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow" />
   </div>
 
-  <div class="row">
-    <div class="field">
-      <label for="organizer_email">Your email (for link recovery)</label>
-      <input id="organizer_email" name="organizer_email" type="email" placeholder="you@example.com" />
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="flex flex-col gap-1.5">
+      <label for="organizer_email" class="text-sm font-semibold text-zinc-700">Your email</label>
+      <input id="organizer_email" name="organizer_email" type="email" placeholder="you@example.com"
+        class="w-full px-3.5 py-2.5 border border-zinc-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow" />
+      <p class="text-[12px] text-zinc-400">Used for dashboard link recovery</p>
     </div>
-    <div class="field">
-      <label for="organizer_phone">Your phone</label>
-      <input id="organizer_phone" name="organizer_phone" type="tel" placeholder="+1 555 000 0000" />
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="field">
-      <label for="event_date">Date &amp; time *</label>
-      <input id="event_date" name="event_date" type="datetime-local" required />
-    </div>
-    <div class="field">
-      <label for="rsvp_deadline">RSVP deadline</label>
-      <input id="rsvp_deadline" name="rsvp_deadline" type="datetime-local" />
+    <div class="flex flex-col gap-1.5">
+      <label for="organizer_phone" class="text-sm font-semibold text-zinc-700">Your phone</label>
+      <input id="organizer_phone" name="organizer_phone" type="tel" placeholder="+1 555 000 0000"
+        class="w-full px-3.5 py-2.5 border border-zinc-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow" />
     </div>
   </div>
 
-  <div class="field">
-    <label for="location">Location</label>
-    <input id="location" name="location" type="text" placeholder="123 Park Ave" />
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="flex flex-col gap-1.5">
+      <label for="event_date" class="text-sm font-semibold text-zinc-700">Date &amp; time <span class="text-violet-600">*</span></label>
+      <input id="event_date" name="event_date" type="datetime-local" required
+        class="w-full px-3.5 py-2.5 border border-zinc-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow" />
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label for="rsvp_deadline" class="text-sm font-semibold text-zinc-700">RSVP deadline</label>
+      <input id="rsvp_deadline" name="rsvp_deadline" type="datetime-local"
+        class="w-full px-3.5 py-2.5 border border-zinc-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow" />
+    </div>
   </div>
 
-  <div class="field">
-    <label for="description">Details / message</label>
-    <textarea id="description" name="description" rows="4" placeholder="Come dressed as your favourite dinosaur!"></textarea>
+  <div class="flex flex-col gap-1.5">
+    <label for="location" class="text-sm font-semibold text-zinc-700">Location</label>
+    <input id="location" name="location" type="text" placeholder="123 Park Ave"
+      class="w-full px-3.5 py-2.5 border border-zinc-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow" />
   </div>
 
-  <div class="field">
-    <label for="image">Cover image (JPEG, PNG, WebP — max 5MB)</label>
-    <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" />
-    <small>Tip: generate a custom image with AI — see <a href="https://github.com/evite-os/evite-os/blob/main/docs/image-generation-prompts.md" target="_blank">prompt guide</a>.</small>
+  <div class="flex flex-col gap-1.5">
+    <label for="description" class="text-sm font-semibold text-zinc-700">Details / message</label>
+    <textarea id="description" name="description" rows="3"
+      placeholder="Come dressed as your favourite dinosaur!"
+      class="w-full px-3.5 py-2.5 border border-zinc-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow resize-none"></textarea>
   </div>
 
-  <button type="submit">Create Party</button>
+  <div class="flex flex-col gap-1.5">
+    <label for="image" class="text-sm font-semibold text-zinc-700">Cover image</label>
+    <div class="border-2 border-dashed border-zinc-200 rounded-lg px-4 py-5 text-center hover:border-violet-300 transition-colors cursor-pointer" id="drop-zone">
+      <p class="text-sm text-zinc-500 mb-1">Drag &amp; drop or <label for="image" class="text-violet-600 font-semibold cursor-pointer hover:text-violet-700">browse</label></p>
+      <p class="text-[12px] text-zinc-400">JPEG, PNG, WebP — max 5MB</p>
+      <p class="text-[12px] text-zinc-400 mt-1">
+        Tip: generate art with AI —
+        <a href="https://github.com/pablocaminog/evite-os/blob/main/docs/image-generation-prompts.md"
+           target="_blank" class="text-violet-600 hover:underline">prompt guide →</a>
+      </p>
+      <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" />
+      <p id="file-name" class="text-[13px] text-violet-600 font-medium mt-2 hidden"></p>
+    </div>
+  </div>
+
+  <button type="submit"
+    class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3.5 rounded-lg text-[15px] transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-violet-500/30 mt-2">
+    Create party →
+  </button>
 </form>
 
-<style>
-  form { display: flex; flex-direction: column; gap: 20px; }
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  label { font-weight: 600; font-size: 14px; }
-  input, textarea { padding: 10px 14px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; }
-  input:focus, textarea:focus { outline: none; border-color: #6366f1; }
-  button { background: #6366f1; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; }
-  button:hover { background: #4f46e5; }
-  .error { background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px; }
-  small { color: #888; font-size: 13px; }
-  @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
-</style>
+<script>
+  const imageInput = document.getElementById('image') as HTMLInputElement;
+  const fileNameEl = document.getElementById('file-name')!;
+  imageInput?.addEventListener('change', () => {
+    const name = imageInput.files?.[0]?.name;
+    if (name) {
+      fileNameEl.textContent = `✓ ${name}`;
+      fileNameEl.classList.remove('hidden');
+    }
+  });
+</script>

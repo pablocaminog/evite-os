@@ -1,95 +1,103 @@
 ---
 export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
 import PartyForm from '../../components/PartyForm.astro';
 ---
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create Party — evite-os</title>
-  <style>
-    body { font-family: system-ui, sans-serif; background: #fafafa; min-height: 100vh; }
-    .container { max-width: 640px; margin: 0 auto; padding: 40px 24px; }
-    h1 { font-size: 1.75rem; margin-bottom: 8px; }
-    .subtitle { color: #666; margin-bottom: 32px; }
-    #result { display: none; background: #d1fae5; border: 1.5px solid #6ee7b7; border-radius: 12px; padding: 24px; }
-    #result h2 { color: #065f46; margin-bottom: 12px; }
-    #manage-url { font-family: monospace; font-size: 14px; background: white; padding: 10px; border-radius: 6px; word-break: break-all; margin: 8px 0; }
-    .copy-btn { background: #6366f1; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; }
-    nav { padding: 16px 24px; }
-    nav a { color: #6366f1; text-decoration: none; font-weight: 600; }
-  </style>
-</head>
-<body>
-  <nav><a href="/">← evite-os</a></nav>
-  <div class="container">
-    <h1>Create your party</h1>
-    <p class="subtitle">Fill in the details. You'll get a private link to manage RSVPs.</p>
+<Layout title="Create a party — whosisdown">
+  <div class="max-w-xl mx-auto px-6 py-16">
+    <div class="mb-10">
+      <h1 class="text-3xl font-extrabold tracking-tight text-zinc-900 mb-2">Create your party</h1>
+      <p class="text-zinc-500">Fill in the details. You'll get a private link to manage RSVPs.</p>
+    </div>
+
     <PartyForm />
-    <div id="result">
-      <h2>🎉 Party created!</h2>
-      <p>Bookmark this link — it's your only way back to your dashboard:</p>
-      <div id="manage-url"></div>
-      <button class="copy-btn" id="copy-btn">Copy link</button>
-      <p style="margin-top:16px"><a id="go-manage" href="#">Open dashboard →</a></p>
+
+    <!-- Success state -->
+    <div id="result" class="hidden mt-6 bg-emerald-50 border border-emerald-200 rounded-xl px-6 py-6">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-xl">🎉</span>
+        <h2 class="text-lg font-bold text-emerald-800">Party created!</h2>
+      </div>
+      <p class="text-sm text-emerald-700 mb-3">Bookmark this link — it's your only way back to your dashboard:</p>
+      <div class="bg-white border border-emerald-200 rounded-lg px-3 py-2.5 font-mono text-sm text-zinc-700 break-all mb-3" id="manage-url"></div>
+      <div class="flex gap-2">
+        <button id="copy-btn"
+          class="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-4 py-2 rounded-md transition-colors">
+          Copy link
+        </button>
+        <a id="go-manage" href="#"
+          class="border border-zinc-200 hover:border-zinc-400 text-zinc-700 text-sm font-semibold px-4 py-2 rounded-md transition-colors">
+          Open dashboard →
+        </a>
+      </div>
     </div>
   </div>
+</Layout>
 
-  <script>
-    document.getElementById('party-form')!.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const form = e.target as HTMLFormElement;
-      const data = new FormData(form);
-      const toIso = (val: FormDataEntryValue | null) =>
-        val ? new Date(val as string).toISOString() : undefined;
+<script>
+  document.getElementById('party-form')!.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    btn.textContent = 'Creating…';
+    btn.disabled = true;
 
-      const payload = {
-        title: data.get('title'),
-        organizer_name: data.get('organizer_name'),
-        organizer_email: data.get('organizer_email') || undefined,
-        organizer_phone: data.get('organizer_phone') || undefined,
-        event_date: toIso(data.get('event_date')),
-        rsvp_deadline: toIso(data.get('rsvp_deadline')) || undefined,
-        location: data.get('location') || undefined,
-        description: data.get('description') || undefined,
-      };
+    const data = new FormData(form);
+    const toIso = (val: FormDataEntryValue | null) =>
+      val ? new Date(val as string).toISOString() : undefined;
 
-      const res = await fetch('/api/parties', {
+    const payload = {
+      title: data.get('title'),
+      organizer_name: data.get('organizer_name'),
+      organizer_email: data.get('organizer_email') || undefined,
+      organizer_phone: data.get('organizer_phone') || undefined,
+      event_date: toIso(data.get('event_date')),
+      rsvp_deadline: toIso(data.get('rsvp_deadline')) || undefined,
+      location: data.get('location') || undefined,
+      description: data.get('description') || undefined,
+    };
+
+    const res = await fetch('/api/parties', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      alert(json.error);
+      btn.textContent = 'Create party →';
+      btn.disabled = false;
+      return;
+    }
+
+    const { id, manage_url } = json;
+
+    const imageFile = data.get('image') as File | null;
+    if (imageFile && imageFile.size > 0) {
+      const token = manage_url.split('/manage/')[1];
+      await fetch('/api/upload', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        headers: {
+          'X-Management-Token': token,
+          'X-Party-Id': id,
+          'Content-Type': imageFile.type,
+        },
+        body: await imageFile.arrayBuffer(),
       });
-      const json = await res.json();
-      if (!res.ok) { alert(json.error); return; }
+    }
 
-      const { id, manage_url } = json;
+    form.style.display = 'none';
+    (document.getElementById('manage-url') as HTMLElement).textContent = manage_url;
+    (document.getElementById('go-manage') as HTMLAnchorElement).href = manage_url;
+    document.getElementById('result')!.classList.remove('hidden');
+  });
 
-      // Upload image if provided
-      const imageFile = data.get('image') as File | null;
-      if (imageFile && imageFile.size > 0) {
-        const token = manage_url.split('/manage/')[1];
-        await fetch('/api/upload', {
-          method: 'POST',
-          headers: {
-            'X-Management-Token': token,
-            'X-Party-Id': id,
-            'Content-Type': imageFile.type,
-          },
-          body: await imageFile.arrayBuffer(),
-        });
-      }
-
-      (form as HTMLFormElement).style.display = 'none';
-      document.getElementById('manage-url')!.textContent = manage_url;
-      (document.getElementById('go-manage') as HTMLAnchorElement).href = manage_url;
-      document.getElementById('result')!.style.display = 'block';
-    });
-
-    document.getElementById('copy-btn')!.addEventListener('click', () => {
-      navigator.clipboard.writeText(document.getElementById('manage-url')!.textContent ?? '');
-    });
-  </script>
-</body>
-</html>
+  document.getElementById('copy-btn')?.addEventListener('click', () => {
+    const url = (document.getElementById('manage-url') as HTMLElement).textContent ?? '';
+    navigator.clipboard.writeText(url);
+    const btn = document.getElementById('copy-btn') as HTMLButtonElement;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy link'; }, 2000);
+  });
+</script>

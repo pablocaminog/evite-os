@@ -7,101 +7,141 @@ export interface Props {
   currentNotes: string | null;
 }
 const { guestName, rsvpToken, currentStatus, currentCount, currentNotes } = Astro.props;
+const attending = currentStatus !== 'declined';
 ---
 
-<form id="rsvp-form" class="rsvp-card">
-  <h2>Will you be there?</h2>
+<div class="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden" id="rsvp-card">
 
-  <div class="field">
-    <label>Your name</label>
-    <p class="name-val">{guestName}</p>
+  <!-- Guest greeting -->
+  <div class="px-6 pt-6 pb-4 border-b border-zinc-100">
+    <p class="text-[13px] text-zinc-400 font-medium uppercase tracking-wide mb-0.5">Your invitation</p>
+    <h2 class="text-xl font-extrabold text-zinc-900">{guestName}</h2>
   </div>
 
-  <div class="field">
-    <label>Attending?</label>
-    <div class="toggle-row">
-      <label class="toggle">
-        <input type="radio" name="status" value="attending" required
-          checked={currentStatus !== 'declined'} />
-        <span>Yes, I'll be there! 🎉</span>
-      </label>
-      <label class="toggle">
-        <input type="radio" name="status" value="declined"
-          checked={currentStatus === 'declined'} />
-        <span>Sorry, can't make it</span>
-      </label>
+  <form id="rsvp-form" class="px-6 py-6 flex flex-col gap-5">
+
+    <!-- Attending toggle — big buttons -->
+    <div>
+      <p class="text-sm font-semibold text-zinc-700 mb-3">Will you be there?</p>
+      <div class="grid grid-cols-2 gap-3">
+        <label id="lbl-yes" class={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all ${attending ? 'border-violet-500 bg-violet-50' : 'border-zinc-200 hover:border-zinc-300'}`}>
+          <input type="radio" name="status" value="attending" class="sr-only" checked={attending} />
+          <span class="text-2xl">🎉</span>
+          <span class="text-sm font-bold text-zinc-800">I'm in!</span>
+        </label>
+        <label id="lbl-no" class={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all ${!attending ? 'border-zinc-400 bg-zinc-50' : 'border-zinc-200 hover:border-zinc-300'}`}>
+          <input type="radio" name="status" value="declined" class="sr-only" checked={!attending} />
+          <span class="text-2xl">😔</span>
+          <span class="text-sm font-bold text-zinc-800">Can't make it</span>
+        </label>
+      </div>
     </div>
-  </div>
 
-  <div class="field" id="count-field">
-    <label for="guest_count">How many people (including you)?</label>
-    <input id="guest_count" name="guest_count" type="number" min="1" max="20" value={currentCount} />
-  </div>
+    <!-- Guest count -->
+    <div id="count-field" class={!attending ? 'hidden' : ''}>
+      <label for="guest_count" class="text-sm font-semibold text-zinc-700 block mb-1.5">
+        How many people coming? <span class="text-zinc-400 font-normal">(including you)</span>
+      </label>
+      <div class="flex items-center gap-3">
+        <button type="button" id="count-minus"
+          class="w-9 h-9 rounded-full border border-zinc-200 text-zinc-600 font-bold text-lg hover:border-zinc-400 transition-colors flex items-center justify-center">
+          −
+        </button>
+        <input id="guest_count" name="guest_count" type="number" min="1" max="20" value={currentCount}
+          class="w-16 text-center border border-zinc-200 rounded-lg py-2 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent" />
+        <button type="button" id="count-plus"
+          class="w-9 h-9 rounded-full border border-zinc-200 text-zinc-600 font-bold text-lg hover:border-zinc-400 transition-colors flex items-center justify-center">
+          +
+        </button>
+      </div>
+    </div>
 
-  <div class="field">
-    <label for="dietary_notes">Dietary restrictions / notes</label>
-    <textarea id="dietary_notes" name="dietary_notes" rows="3"
-      placeholder="Nut allergy, vegetarian, etc.">{currentNotes ?? ''}</textarea>
-  </div>
+    <!-- Dietary notes -->
+    <div>
+      <label for="dietary_notes" class="text-sm font-semibold text-zinc-700 block mb-1.5">
+        Dietary restrictions or notes <span class="text-zinc-400 font-normal">(optional)</span>
+      </label>
+      <textarea id="dietary_notes" name="dietary_notes" rows="2"
+        placeholder="Nut allergy, vegetarian, etc."
+        class="w-full px-3.5 py-2.5 border border-zinc-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none transition-shadow"
+      >{currentNotes ?? ''}</textarea>
+    </div>
 
-  <button type="submit">Submit RSVP</button>
-  <div id="rsvp-feedback"></div>
-</form>
+    <button type="submit"
+      class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3.5 rounded-xl text-[15px] transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-violet-500/30">
+      Submit RSVP
+    </button>
+
+    <div id="rsvp-feedback"></div>
+  </form>
+</div>
 
 <script define:vars={{ rsvpToken }}>
   const form = document.getElementById('rsvp-form');
   const countField = document.getElementById('count-field');
+  const lblYes = document.getElementById('lbl-yes');
+  const lblNo = document.getElementById('lbl-no');
+  const countInput = document.getElementById('guest_count');
 
-  function syncCount() {
+  function syncUI() {
     const status = form.querySelector('[name="status"]:checked')?.value;
-    countField.style.display = status === 'declined' ? 'none' : 'block';
+    const isAttending = status === 'attending';
+    countField.style.display = isAttending ? '' : 'none';
+
+    lblYes.classList.toggle('border-violet-500', isAttending);
+    lblYes.classList.toggle('bg-violet-50', isAttending);
+    lblYes.classList.toggle('border-zinc-200', !isAttending);
+    lblNo.classList.toggle('border-zinc-400', !isAttending);
+    lblNo.classList.toggle('bg-zinc-50', !isAttending);
+    lblNo.classList.toggle('border-zinc-200', isAttending);
   }
-  form.querySelectorAll('[name="status"]').forEach((r) => r.addEventListener('change', syncCount));
-  syncCount();
+
+  form.querySelectorAll('[name="status"]').forEach(r => r.addEventListener('change', syncUI));
+
+  document.getElementById('count-minus')?.addEventListener('click', () => {
+    const v = parseInt(countInput.value, 10);
+    if (v > 1) countInput.value = String(v - 1);
+  });
+  document.getElementById('count-plus')?.addEventListener('click', () => {
+    const v = parseInt(countInput.value, 10);
+    if (v < 20) countInput.value = String(v + 1);
+  });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
     const data = new FormData(form);
     const payload = {
       status: data.get('status'),
       guest_count: parseInt(data.get('guest_count') || '1', 10),
       dietary_notes: data.get('dietary_notes') || null,
     };
+
     const res = await fetch(`/api/rsvp/${rsvpToken}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
+
     const fb = document.getElementById('rsvp-feedback');
     if (res.ok) {
-      form.querySelector('button').style.display = 'none';
-      fb.innerHTML = payload.status === 'attending'
-        ? '<p class="success">🎉 You\'re on the list! See you there.</p>'
-        : '<p class="success">Got it — sorry you can\'t make it!</p>';
+      form.querySelector('button[type="submit"]').style.display = 'none';
+      const isYes = payload.status === 'attending';
+      fb.innerHTML = `
+        <div class="flex items-start gap-3 bg-${isYes ? 'emerald' : 'zinc'}-50 border border-${isYes ? 'emerald' : 'zinc'}-200 rounded-xl px-4 py-4">
+          <span class="text-xl">${isYes ? '🎉' : '👋'}</span>
+          <p class="text-sm font-semibold text-${isYes ? 'emerald' : 'zinc'}-700">
+            ${isYes ? "You're on the list! See you there." : "Got it — sorry you can't make it!"}
+          </p>
+        </div>`;
     } else {
       const json = await res.json();
-      const p = document.createElement('p');
-      p.className = 'error';
-      p.textContent = json.error;
-      fb.appendChild(p);
+      fb.innerHTML = `<div class="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">${json.error}</div>`;
+      btn.disabled = false;
+      btn.textContent = 'Submit RSVP';
     }
   });
 </script>
-
-<style>
-  .rsvp-card { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 2px 16px rgba(0,0,0,.08); }
-  h2 { font-size: 1.5rem; margin-bottom: 24px; }
-  .field { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
-  label { font-weight: 600; font-size: 14px; color: #444; }
-  .name-val { font-size: 1.1rem; font-weight: 700; }
-  .toggle-row { display: flex; gap: 12px; }
-  .toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 12px 20px; border: 2px solid #e5e7eb; border-radius: 10px; flex: 1; }
-  .toggle input[type="radio"] { width: 18px; height: 18px; accent-color: #6366f1; }
-  .toggle:has(input:checked) { border-color: #6366f1; background: #eef2ff; }
-  input[type="number"], textarea { padding: 10px 14px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; }
-  input:focus, textarea:focus { outline: none; border-color: #6366f1; }
-  button { width: 100%; background: #6366f1; color: white; border: none; padding: 14px; border-radius: 10px; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 8px; }
-  button:hover { background: #4f46e5; }
-  .success { color: #065f46; background: #d1fae5; padding: 14px; border-radius: 8px; margin-top: 12px; }
-  .error { color: #991b1b; background: #fee2e2; padding: 14px; border-radius: 8px; margin-top: 12px; }
-</style>

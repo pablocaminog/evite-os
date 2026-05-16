@@ -17,8 +17,10 @@
   "dependencies": {
     "@astrojs/check": "^0.9.9",
     "@astrojs/cloudflare": "^13.5.1",
+    "@tailwindcss/vite": "^4.3.0",
     "astro": "^6.3.3",
     "mimetext": "^3.0.28",
+    "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
     "wrangler": "^4.92.0"
   },

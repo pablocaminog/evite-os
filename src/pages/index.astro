@@ -1,68 +1,134 @@
 ---
 export const prerender = true;
+import Layout from '../layouts/Layout.astro';
 ---
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>evite-os — Free Party Invitations</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; background: #fafafa; color: #1a1a1a; }
-    .hero { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 80px 24px; text-align: center; }
-    .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 16px; }
-    .hero p { font-size: 1.25rem; opacity: 0.9; margin-bottom: 40px; max-width: 560px; margin-left: auto; margin-right: auto; }
-    .btn { display: inline-block; background: white; color: #6366f1; padding: 16px 40px; border-radius: 999px; font-size: 1.125rem; font-weight: 700; text-decoration: none; }
-    .btn:hover { background: #f0f0ff; }
-    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; max-width: 960px; margin: 64px auto; padding: 0 24px; }
-    .feature { background: white; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
-    .feature .icon { font-size: 2rem; margin-bottom: 12px; }
-    .feature h3 { font-size: 1.125rem; margin-bottom: 8px; }
-    .feature p { color: #555; line-height: 1.6; }
-    .cta { text-align: center; padding: 64px 24px; }
-    .cta a { background: #6366f1; color: white; padding: 16px 40px; border-radius: 999px; font-size: 1.125rem; font-weight: 700; text-decoration: none; }
-    footer { text-align: center; padding: 32px; color: #999; font-size: 14px; }
-    footer a { color: #999; }
-  </style>
-</head>
-<body>
-  <div class="hero">
-    <h1>Party invitations,<br>without the bloat.</h1>
-    <p>Send invites by email or text, track RSVPs instantly. Free and open source.</p>
-    <a href="/party/new" class="btn">Create your party →</a>
+<Layout title="whosisdown — Know who's coming">
+
+  <!-- Hero -->
+  <section class="relative overflow-hidden pt-24 pb-20 px-6 text-center">
+    <!-- Glow -->
+    <div class="absolute inset-0 flex items-start justify-center pointer-events-none" aria-hidden="true">
+      <div class="w-[700px] h-[400px] bg-violet-600/10 rounded-full blur-3xl mt-8"></div>
+    </div>
+
+    <div class="relative max-w-2xl mx-auto">
+      <div class="inline-flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-full px-3 py-1 text-xs font-medium text-zinc-500 mb-7 animate-fade-up">
+        ✦ Free &amp; open source
+      </div>
+
+      <h1 class="text-5xl sm:text-6xl md:text-7xl font-black tracking-tighter leading-[1.04] text-zinc-900 mb-5"
+          style="animation: fadeUp .5s .06s ease both; opacity:0">
+        Know who's<br>
+        <span class="text-violet-600 relative inline-block">
+          coming.
+          <span class="absolute bottom-1 left-0 right-0 h-[3px] rounded-full"
+                style="background: linear-gradient(90deg,#7c3aed,#a78bfa,#7c3aed); background-size:200% 100%; animation: shimmer 2.5s linear infinite;"></span>
+        </span>
+      </h1>
+
+      <p class="text-lg text-zinc-500 leading-relaxed mb-10 max-w-md mx-auto"
+         style="animation: fadeUp .5s .14s ease both; opacity:0">
+        Send party invites by email or text. Guests RSVP with one tap. See your headcount instantly — no accounts, no app downloads.
+      </p>
+
+      <div class="flex items-center justify-center gap-3 flex-wrap"
+           style="animation: fadeUp .5s .22s ease both; opacity:0">
+        <a href="/party/new"
+           class="bg-violet-600 hover:bg-violet-700 text-white font-bold px-7 py-3.5 rounded-lg text-[15px] transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-violet-500/30">
+          Plan your party →
+        </a>
+        <a href="#how"
+           class="border border-zinc-200 hover:border-zinc-400 text-zinc-700 font-semibold px-7 py-3.5 rounded-lg text-[15px] transition-all hover:-translate-y-0.5">
+          See how it works
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="reveal border-t border-zinc-100 py-20 px-6">
+    <div class="max-w-4xl mx-auto">
+      <p class="text-center text-[11px] font-semibold tracking-widest uppercase text-zinc-400 mb-12">Everything you need</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-100 border border-zinc-100 rounded-xl overflow-hidden">
+        {[
+          { icon: '✉', title: 'Email & SMS invites', body: 'Send personalized invitations by email or text in seconds.' },
+          { icon: '✓', title: 'Live RSVP tracking', body: 'See who\'s attending, headcount, and dietary needs in real time.' },
+          { icon: '🖼', title: 'Custom cover art', body: 'Upload any image or use AI to generate the perfect party art.' },
+          { icon: '🔑', title: 'No accounts needed', body: 'You get a private link. Guests click and RSVP. Nothing to sign up for.' },
+        ].map(f => (
+          <div class="bg-white px-6 py-7 group">
+            <div class="w-9 h-9 bg-violet-100 rounded-lg flex items-center justify-center text-base mb-4 transition-transform group-hover:scale-110 group-hover:rotate-[-3deg] group-hover:bg-violet-200">
+              {f.icon}
+            </div>
+            <h3 class="text-sm font-bold text-zinc-900 mb-1.5">{f.title}</h3>
+            <p class="text-[13px] text-zinc-500 leading-relaxed">{f.body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how" class="py-20 px-6 max-w-xl mx-auto">
+    <h2 class="text-3xl font-extrabold tracking-tight text-center mb-12">Dead simple by design</h2>
+    <div class="relative flex flex-col gap-0" id="steps">
+      <div class="absolute left-[13px] top-4 bottom-4 w-px bg-gradient-to-b from-violet-500 to-zinc-200 pointer-events-none"></div>
+      {[
+        { n: 1, title: 'Create your party', body: 'Name, date, location, description. Upload a cover image or skip it. Takes 60 seconds.' },
+        { n: 2, title: 'Add your guests', body: 'Name + email or phone. Mix and match — some by text, others by email.' },
+        { n: 3, title: 'Hit send', body: 'Each guest gets a personal link. They tap to RSVP — no account, no app.' },
+        { n: 4, title: 'Watch RSVPs come in', body: 'Your dashboard shows live counts. Export the guest list as CSV anytime.' },
+      ].map(s => (
+        <div class="step-item flex gap-4 py-5">
+          <div class="w-7 h-7 rounded-full bg-zinc-900 text-white text-xs font-extrabold flex items-center justify-center flex-shrink-0 mt-0.5 relative z-10 transition-all group-hover:bg-violet-600">
+            {s.n}
+          </div>
+          <div>
+            <h4 class="text-sm font-bold mb-1">{s.title}</h4>
+            <p class="text-[13px] text-zinc-500 leading-snug">{s.body}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Dark CTA -->
+  <div class="reveal max-w-5xl mx-auto px-6 mb-4">
+    <div class="bg-zinc-950 rounded-2xl px-8 py-14 text-center relative overflow-hidden">
+      <!-- Floating orbs -->
+      <div class="absolute w-64 h-64 rounded-full pointer-events-none"
+           style="background: radial-gradient(circle, rgba(124,58,237,.3) 0%, transparent 70%); top:-60px; left:-40px; animation: float 6s ease-in-out infinite;"></div>
+      <div class="absolute w-48 h-48 rounded-full pointer-events-none"
+           style="background: radial-gradient(circle, rgba(167,139,250,.2) 0%, transparent 70%); bottom:-30px; right:60px; animation: float 9s ease-in-out infinite reverse;"></div>
+
+      <h2 class="relative text-white text-3xl font-extrabold tracking-tight mb-3">Your next party starts here.</h2>
+      <p class="relative text-zinc-400 mb-8 text-[15px]">Free, open source, and ready in under two minutes.</p>
+      <a href="/party/new"
+         class="relative inline-block bg-violet-600 hover:bg-violet-700 text-white font-bold px-8 py-3.5 rounded-lg text-[15px] transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-violet-500/40">
+        Create your party →
+      </a>
+    </div>
   </div>
 
-  <div class="features">
-    <div class="feature">
-      <div class="icon">📧</div>
-      <h3>Email &amp; SMS invites</h3>
-      <p>Send beautiful invitations by email or text message in seconds.</p>
-    </div>
-    <div class="feature">
-      <div class="icon">✅</div>
-      <h3>RSVP tracking</h3>
-      <p>See who's coming, total headcount, dietary needs — all in one dashboard.</p>
-    </div>
-    <div class="feature">
-      <div class="icon">🎨</div>
-      <h3>Custom cover images</h3>
-      <p>Upload any image. Use AI tools like ChatGPT or Gemini to generate the perfect party art.</p>
-    </div>
-    <div class="feature">
-      <div class="icon">🔒</div>
-      <h3>No accounts needed</h3>
-      <p>Organizers get a private link. Guests RSVP with one click. Zero signups.</p>
-    </div>
-  </div>
+</Layout>
 
-  <div class="cta">
-    <a href="/party/new">Plan your next party →</a>
-  </div>
+<script>
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-  <footer>
-    <a href="https://github.com/evite-os/evite-os">Open source on GitHub</a> · Built with Cloudflare Workers
-  </footer>
-</body>
-</html>
+  const stepIo = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        document.querySelectorAll('.step-item').forEach((s, i) => {
+          setTimeout(() => s.classList.add('visible'), i * 110);
+        });
+        stepIo.disconnect();
+      }
+    });
+  }, { threshold: 0.2 });
+  const steps = document.getElementById('steps');
+  if (steps) stepIo.observe(steps);
+</script>

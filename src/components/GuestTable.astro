@@ -9,62 +9,91 @@ export interface Props {
   appUrl: string;
 }
 const { guests, summary, partyId, managementToken, appUrl } = Astro.props;
-
-const statusColor: Record<string, string> = {
-  pending: '#f59e0b',
-  attending: '#10b981',
-  declined: '#ef4444',
-};
 ---
 
-<div class="summary">
-  <div class="stat"><span class="num">{summary.attending}</span><span class="label">Attending</span></div>
-  <div class="stat"><span class="num">{summary.declined}</span><span class="label">Declined</span></div>
-  <div class="stat"><span class="num">{summary.pending}</span><span class="label">Pending</span></div>
-  <div class="stat"><span class="num">{summary.headcount}</span><span class="label">Total guests</span></div>
+<!-- RSVP Summary stats -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+  <div class="bg-white border border-zinc-100 rounded-xl px-4 py-4 text-center shadow-sm">
+    <span class="block text-3xl font-black text-emerald-600 leading-none mb-1">{summary.attending}</span>
+    <span class="text-[12px] text-zinc-400 font-medium">Attending</span>
+  </div>
+  <div class="bg-white border border-zinc-100 rounded-xl px-4 py-4 text-center shadow-sm">
+    <span class="block text-3xl font-black text-violet-600 leading-none mb-1">{summary.headcount}</span>
+    <span class="text-[12px] text-zinc-400 font-medium">Total guests</span>
+  </div>
+  <div class="bg-white border border-zinc-100 rounded-xl px-4 py-4 text-center shadow-sm">
+    <span class="block text-3xl font-black text-amber-600 leading-none mb-1">{summary.pending}</span>
+    <span class="text-[12px] text-zinc-400 font-medium">Pending</span>
+  </div>
+  <div class="bg-white border border-zinc-100 rounded-xl px-4 py-4 text-center shadow-sm">
+    <span class="block text-3xl font-black text-red-500 leading-none mb-1">{summary.declined}</span>
+    <span class="text-[12px] text-zinc-400 font-medium">Declined</span>
+  </div>
 </div>
 
-<div class="table-actions">
-  <button class="btn-primary" id="send-all-btn"
-    data-party-id={partyId}
-    data-token={managementToken}>
+<!-- Actions -->
+<div class="flex gap-2 mb-4 flex-wrap">
+  <button id="send-all-btn"
+    data-party-id={partyId} data-token={managementToken}
+    class="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
     Send invites to pending
   </button>
-  <button class="btn-secondary" id="export-btn"
-    data-party-id={partyId}
-    data-token={managementToken}>
+  <button id="export-btn"
+    data-party-id={partyId} data-token={managementToken}
+    class="border border-zinc-200 hover:border-zinc-400 text-zinc-700 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
     Export CSV
   </button>
 </div>
 
-{guests.length === 0
-  ? <p class="empty">No guests yet. Add some below.</p>
-  : (
-    <div class="table-wrap">
-      <table>
+{guests.length === 0 ? (
+  <div class="bg-white border border-zinc-100 rounded-xl p-10 text-center shadow-sm">
+    <p class="text-zinc-400 text-sm">No guests yet. Add some below.</p>
+  </div>
+) : (
+  <div class="bg-white border border-zinc-100 rounded-xl shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
         <thead>
-          <tr><th>Name</th><th>Contact</th><th>Status</th><th>Guests</th><th>Dietary</th><th>RSVP link</th></tr>
+          <tr class="border-b border-zinc-100">
+            <th class="text-left px-4 py-3 text-[12px] font-semibold text-zinc-400 uppercase tracking-wide">Name</th>
+            <th class="text-left px-4 py-3 text-[12px] font-semibold text-zinc-400 uppercase tracking-wide">Contact</th>
+            <th class="text-left px-4 py-3 text-[12px] font-semibold text-zinc-400 uppercase tracking-wide">Status</th>
+            <th class="text-left px-4 py-3 text-[12px] font-semibold text-zinc-400 uppercase tracking-wide">Guests</th>
+            <th class="text-left px-4 py-3 text-[12px] font-semibold text-zinc-400 uppercase tracking-wide">Dietary</th>
+            <th class="text-left px-4 py-3 text-[12px] font-semibold text-zinc-400 uppercase tracking-wide">Link</th>
+          </tr>
         </thead>
         <tbody>
-          {guests.map((g) => (
-            <tr>
-              <td>{g.name}</td>
-              <td class="contact">{g.email || g.phone}</td>
-              <td>
-                <span class="badge" style={`background:${statusColor[g.status]}22;color:${statusColor[g.status]}`}>
-                  {g.status}
-                </span>
+          {guests.map(g => (
+            <tr class="border-b border-zinc-50 hover:bg-zinc-50 transition-colors">
+              <td class="px-4 py-3 font-semibold text-zinc-800">{g.name}</td>
+              <td class="px-4 py-3 text-zinc-500 max-w-[180px] truncate">{g.email || g.phone}</td>
+              <td class="px-4 py-3">
+                {g.status === 'attending' && (
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700">attending</span>
+                )}
+                {g.status === 'declined' && (
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 text-red-700">declined</span>
+                )}
+                {g.status === 'pending' && (
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-700">pending</span>
+                )}
               </td>
-              <td>{g.guest_count}</td>
-              <td>{g.dietary_notes ?? '—'}</td>
-              <td><a href={`${appUrl}/invite/${g.rsvp_token}`} target="_blank" class="link">Open</a></td>
+              <td class="px-4 py-3 text-zinc-600">{g.guest_count}</td>
+              <td class="px-4 py-3 text-zinc-500">{g.dietary_notes ?? '—'}</td>
+              <td class="px-4 py-3">
+                <a href={`${appUrl}/invite/${g.rsvp_token}`} target="_blank"
+                   class="text-violet-600 hover:text-violet-800 font-medium transition-colors">
+                  Open ↗
+                </a>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
-  )
-}
+  </div>
+)}
 
 <script>
   document.getElementById('export-btn')?.addEventListener('click', async (e) => {
@@ -84,33 +113,14 @@ const statusColor: Record<string, string> = {
     const btn = e.currentTarget as HTMLButtonElement;
     const { partyId, token } = btn.dataset;
     btn.disabled = true;
-    btn.textContent = 'Sending...';
+    btn.textContent = 'Sending…';
     const res = await fetch(`/api/parties/${partyId}/invite`, {
       method: 'POST',
       headers: { 'X-Management-Token': token!, 'Content-Type': 'application/json' },
       body: '{}',
     });
     const json = await res.json();
-    btn.textContent = `Done — ${json.sent} sent`;
-    setTimeout(() => location.reload(), 1200);
+    btn.textContent = `✓ ${json.sent} sent`;
+    setTimeout(() => location.reload(), 1400);
   });
 </script>
-
-<style>
-  .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-  .stat { background: white; border-radius: 10px; padding: 16px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-  .num { display: block; font-size: 2rem; font-weight: 800; color: #6366f1; }
-  .label { font-size: 13px; color: #888; }
-  .table-actions { display: flex; gap: 12px; margin-bottom: 16px; }
-  .btn-primary { background: #6366f1; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
-  .btn-secondary { background: white; border: 1.5px solid #ddd; padding: 9px 20px; border-radius: 8px; font-size: 14px; color: #444; cursor: pointer; }
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-  th { background: #f8f9fa; padding: 12px 16px; text-align: left; font-size: 13px; color: #888; }
-  td { padding: 12px 16px; border-top: 1px solid #f0f0f0; font-size: 14px; }
-  .badge { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
-  .link { color: #6366f1; text-decoration: none; }
-  .contact { max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
-  .empty { color: #aaa; text-align: center; padding: 32px; }
-  @media (max-width: 600px) { .summary { grid-template-columns: 1fr 1fr; } }
-</style>
