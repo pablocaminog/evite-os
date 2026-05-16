@@ -16,7 +16,7 @@ export const POST: APIRoute = async (context) => {
       context.request.headers.get('CF-Connecting-IP')
     );
     if (!ts.success) {
-      return Response.json({ error: 'Human verification failed. Please try again.' }, { status: 403 });
+      return Response.json({ error: `Human verification failed (${ts.error}). Please try again.` }, { status: 403 });
     }
 
     const { username } = body;

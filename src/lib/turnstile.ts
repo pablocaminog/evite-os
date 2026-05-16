@@ -15,10 +15,12 @@ export async function verifyTurnstile(
 
   try {
     const res = await fetch(SITEVERIFY, { method: 'POST', body });
-    const data = await res.json() as { success: boolean; 'error-codes'?: string[] };
+    const data = await res.json() as { success: boolean; 'error-codes'?: string[]; hostname?: string };
+    console.log('[turnstile siteverify]', JSON.stringify(data));
     if (data.success) return { success: true };
     return { success: false, error: data['error-codes']?.[0] ?? 'verification-failed' };
-  } catch {
+  } catch (err) {
+    console.error('[turnstile siteverify error]', err);
     return { success: false, error: 'siteverify-unreachable' };
   }
 }

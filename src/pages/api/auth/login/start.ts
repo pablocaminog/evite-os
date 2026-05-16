@@ -18,18 +18,20 @@ export const POST: APIRoute = async (context) => {
     const user = await getUserByUsername(env.DB, clean);
     if (!user) return Response.json({ error: 'No account found' }, { status: 404 });
 
-    // User exists — now safe to consume the token
+    const creds = await getCredentialsByUserId(env.DB, user.id);
+    // No passkeys yet — return 404 WITHOUT consuming the Turnstile token so
+    // the same token can be forwarded to register/start on the next call.
+    if (!creds.length) return Response.json({ error: 'No passkeys registered' }, { status: 404 });
+
+    // Credentials confirmed — safe to consume the token now
     const ts = await verifyTurnstile(
       (env as any).TURNSTILE_SECRET_KEY,
       body.turnstileToken,
       context.request.headers.get('CF-Connecting-IP')
     );
     if (!ts.success) {
-      return Response.json({ error: 'Human verification failed. Please try again.' }, { status: 403 });
+      return Response.json({ error: `Human verification failed (${ts.error}). Please try again.` }, { status: 403 });
     }
-
-    const creds = await getCredentialsByUserId(env.DB, user.id);
-    if (!creds.length) return Response.json({ error: 'No passkeys registered' }, { status: 404 });
 
     const options = await generateAuthenticationOptions({
       rpID: new URL(env.APP_URL).hostname,
