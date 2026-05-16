@@ -1,17 +1,23 @@
 ---
 export const prerender = false;
+import { env } from 'cloudflare:workers';
 import Layout from '../../layouts/Layout.astro';
 import PartyForm from '../../components/PartyForm.astro';
+
+const sitekey = (env as any).TURNSTILE_SITE_KEY ?? '';
 ---
 
 <Layout title="Create a party — whosisdown">
+  <!-- Turnstile script -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer is:inline></script>
+
   <div class="max-w-xl mx-auto px-6 py-16">
     <div class="mb-10">
       <h1 class="text-3xl font-extrabold tracking-tight text-zinc-900 mb-2">Create your party</h1>
       <p class="text-zinc-500">Fill in the details. You'll get a private link to manage RSVPs.</p>
     </div>
 
-    <PartyForm />
+    <PartyForm sitekey={sitekey} />
 
     <!-- Success state -->
     <div id="result" class="hidden mt-6 bg-emerald-50 border border-emerald-200 rounded-xl px-6 py-6">
@@ -21,7 +27,7 @@ import PartyForm from '../../components/PartyForm.astro';
       </div>
       <p class="text-sm text-emerald-700 mb-3">Bookmark this link — it's your only way back to your dashboard:</p>
       <div class="bg-white border border-emerald-200 rounded-lg px-3 py-2.5 font-mono text-sm text-zinc-700 break-all mb-3" id="manage-url"></div>
-      <div class="flex gap-2">
+      <div class="flex gap-2 flex-wrap">
         <button id="copy-btn"
           class="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-4 py-2 rounded-md transition-colors">
           Copy link
@@ -31,6 +37,10 @@ import PartyForm from '../../components/PartyForm.astro';
           Open dashboard →
         </a>
       </div>
+      <p id="guest-expiry-note" class="hidden text-xs text-amber-600 mt-3">
+        ⏳ Guest party — expires in 6 months.
+        <a href="/login" class="font-semibold underline">Sign in</a> to keep it forever.
+      </p>
     </div>
   </div>
 </Layout>
@@ -39,7 +49,14 @@ import PartyForm from '../../components/PartyForm.astro';
   document.getElementById('party-form')!.addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
-    const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const btn = document.getElementById('party-submit-btn') as HTMLButtonElement;
+
+    const turnstileToken = (window as any).__turnstileToken;
+    if (!turnstileToken) {
+      alert('Please complete the human verification first.');
+      return;
+    }
+
     btn.textContent = 'Creating…';
     btn.disabled = true;
 
@@ -56,6 +73,7 @@ import PartyForm from '../../components/PartyForm.astro';
       rsvp_deadline: toIso(data.get('rsvp_deadline')) || undefined,
       location: data.get('location') || undefined,
       description: data.get('description') || undefined,
+      turnstileToken,
     };
 
     const res = await fetch('/api/parties', {
@@ -64,15 +82,18 @@ import PartyForm from '../../components/PartyForm.astro';
       body: JSON.stringify(payload),
     });
     let json: any = {};
-    try { json = await res.json(); } catch { /* empty body */ }
+    try { json = await res.json(); } catch {}
     if (!res.ok) {
       alert(json.error ?? `Server error ${res.status}`);
       btn.textContent = 'Create party →';
       btn.disabled = false;
+      // Reset Turnstile — token was consumed
+      if ((window as any).turnstile) (window as any).turnstile.reset();
+      (window as any).onPartyTurnstileExpired?.();
       return;
     }
 
-    const { id, manage_url } = json;
+    const { id, manage_url, guest } = json;
 
     const imageFile = data.get('image') as File | null;
     if (imageFile && imageFile.size > 0) {
@@ -88,10 +109,11 @@ import PartyForm from '../../components/PartyForm.astro';
       });
     }
 
-    form.style.display = 'none';
+    (form as HTMLFormElement).style.display = 'none';
     (document.getElementById('manage-url') as HTMLElement).textContent = manage_url;
     (document.getElementById('go-manage') as HTMLAnchorElement).href = manage_url;
     document.getElementById('result')!.classList.remove('hidden');
+    if (guest) document.getElementById('guest-expiry-note')!.classList.remove('hidden');
   });
 
   document.getElementById('copy-btn')?.addEventListener('click', () => {

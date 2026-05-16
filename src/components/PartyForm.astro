@@ -1,8 +1,9 @@
 ---
 export interface Props {
   error?: string;
+  sitekey?: string;
 }
-const { error } = Astro.props;
+const { error, sitekey = '' } = Astro.props;
 ---
 
 <form id="party-form" class="flex flex-col gap-5">
@@ -85,13 +86,55 @@ const { error } = Astro.props;
     <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" />
   </div>
 
-  <button type="submit"
-    class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3.5 rounded-lg text-[15px] transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-violet-500/30 mt-2">
+  <!-- Turnstile verification -->
+  {sitekey && (
+    <div>
+      <div class="flex justify-center mb-3">
+        <div class="cf-turnstile"
+          data-sitekey={sitekey}
+          data-theme="light"
+          data-size="flexible"
+          data-callback="onPartyTurnstileSuccess"
+          data-expired-callback="onPartyTurnstileExpired"
+          data-error-callback="onPartyTurnstileError">
+        </div>
+      </div>
+      <p id="ts-hint" class="text-[11px] text-zinc-400 text-center mb-3">Complete the verification to create your party</p>
+    </div>
+  )}
+
+  <button type="submit" id="party-submit-btn"
+    class="w-full bg-violet-600 text-white font-bold py-3.5 rounded-lg text-[15px] transition-all mt-2 opacity-50 cursor-not-allowed"
+    disabled={sitekey ? true : undefined}>
     Create party →
   </button>
 </form>
 
 <script>
+  // Turnstile token — shared via window so new.astro submit handler can read it
+  window.__turnstileToken = null;
+
+  window.onPartyTurnstileSuccess = (token: string) => {
+    window.__turnstileToken = token;
+    const btn = document.getElementById('party-submit-btn') as HTMLButtonElement;
+    const hint = document.getElementById('ts-hint');
+    btn.disabled = false;
+    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    btn.classList.add('hover:bg-violet-700', 'hover:-translate-y-0.5', 'hover:shadow-lg', 'hover:shadow-violet-500/30');
+    if (hint) hint.classList.add('hidden');
+  };
+  window.onPartyTurnstileExpired = () => {
+    window.__turnstileToken = null;
+    const btn = document.getElementById('party-submit-btn') as HTMLButtonElement;
+    const hint = document.getElementById('ts-hint');
+    btn.disabled = true;
+    btn.classList.add('opacity-50', 'cursor-not-allowed');
+    if (hint) hint.classList.remove('hidden');
+  };
+  window.onPartyTurnstileError = () => {
+    window.__turnstileToken = null;
+  };
+
   const imageInput = document.getElementById('image') as HTMLInputElement;
   const dropZone = document.getElementById('drop-zone')!;
   const previewWrap = document.getElementById('img-preview-wrap')!;

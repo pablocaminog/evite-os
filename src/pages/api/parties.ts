@@ -3,6 +3,7 @@ import { env } from 'cloudflare:workers';
 import { generateId, generateToken } from '../../lib/tokens';
 import { createParty } from '../../lib/db';
 import { getSession } from '../../lib/auth';
+import { verifyTurnstile } from '../../lib/turnstile';
 
 export const prerender = false;
 
@@ -25,7 +26,20 @@ export const POST: APIRoute = async (context) => {
     const {
       title, description, event_date, location,
       organizer_name, organizer_email, organizer_phone, rsvp_deadline,
+      turnstileToken,
     } = body as Record<string, string>;
+
+    const ts = await verifyTurnstile(
+      (env as any).TURNSTILE_SECRET_KEY,
+      turnstileToken,
+      context.request.headers.get('CF-Connecting-IP')
+    );
+    if (!ts.success) {
+      return new Response(
+        JSON.stringify({ error: 'Human verification failed. Please try again.' }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
 
     if (!title || !event_date || !organizer_name) {
       return new Response(
