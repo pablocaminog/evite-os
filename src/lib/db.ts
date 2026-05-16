@@ -51,6 +51,8 @@ export interface NewParty {
   organizer_email?: string;
   organizer_phone?: string;
   rsvp_deadline?: string;
+  user_id?: string | null;
+  expires_at?: string | null;
 }
 
 export interface NewGuest {
@@ -75,7 +77,7 @@ export async function getPartyByManagementToken(
   token: string
 ): Promise<Party | null> {
   return db
-    .prepare('SELECT * FROM parties WHERE management_token = ?')
+    .prepare("SELECT * FROM parties WHERE management_token = ? AND (expires_at IS NULL OR expires_at > datetime('now'))")
     .bind(token)
     .first<Party>();
 }
@@ -85,7 +87,7 @@ export async function getPartyById(
   id: string
 ): Promise<Party | null> {
   return db
-    .prepare('SELECT * FROM parties WHERE id = ?')
+    .prepare("SELECT * FROM parties WHERE id = ? AND (expires_at IS NULL OR expires_at > datetime('now'))")
     .bind(id)
     .first<Party>();
 }
@@ -109,8 +111,9 @@ export async function createParty(
     .prepare(
       `INSERT INTO parties
         (id, management_token, title, description, event_date, location,
-         organizer_name, organizer_email, organizer_phone, rsvp_deadline)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         organizer_name, organizer_email, organizer_phone, rsvp_deadline,
+         user_id, expires_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .bind(
       party.id,
@@ -122,7 +125,9 @@ export async function createParty(
       party.organizer_name,
       party.organizer_email ?? null,
       party.organizer_phone ?? null,
-      party.rsvp_deadline ?? null
+      party.rsvp_deadline ?? null,
+      party.user_id ?? null,
+      party.expires_at ?? null
     )
     .run();
 }

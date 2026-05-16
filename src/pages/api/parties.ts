@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { generateId, generateToken } from '../../lib/tokens';
 import { createParty } from '../../lib/db';
+import { getSession } from '../../lib/auth';
 
 export const prerender = false;
 
@@ -33,18 +34,29 @@ export const POST: APIRoute = async (context) => {
       );
     }
 
+    // Check for authenticated user
+    const sessionToken = context.request.headers.get('Cookie')
+      ?.split(';').map(c => c.trim())
+      .find(c => c.startsWith('wid_session='))
+      ?.split('=')[1];
+    const session = sessionToken ? await getSession(env.SESSION, sessionToken) : null;
+
     const id = generateId();
     const management_token = generateToken();
+    const expires_at = session ? null : new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString();
 
     await createParty(env.DB, {
       id, management_token, title, event_date, organizer_name,
       description, location, organizer_email, organizer_phone, rsvp_deadline,
+      user_id: session?.userId ?? null,
+      expires_at,
     });
 
     return new Response(
       JSON.stringify({
         id,
         manage_url: `${env.APP_URL}/manage/${management_token}`,
+        guest: !session,
       }),
       { status: 201, headers: { 'Content-Type': 'application/json' } }
     );

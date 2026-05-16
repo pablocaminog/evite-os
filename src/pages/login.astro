@@ -1,0 +1,166 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import Layout from '../layouts/Layout.astro';
+import { getSession } from '../lib/auth';
+
+const sessionToken = Astro.cookies.get('wid_session')?.value;
+if (sessionToken) {
+  const session = await getSession(env.SESSION, sessionToken);
+  if (session) return Astro.redirect('/');
+}
+
+const redirect = Astro.url.searchParams.get('redirect') ?? '/';
+---
+
+<Layout title="Sign in — whosisdown">
+  <div class="min-h-[calc(100vh-56px)] flex items-center justify-center px-6 py-16">
+    <div class="w-full max-w-sm">
+      <div class="bg-white rounded-2xl border border-zinc-100 shadow-sm px-8 py-8">
+        <div class="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center text-xl mb-5">🔐</div>
+        <h1 class="text-xl font-extrabold text-zinc-900 mb-1">Sign in to whosisdown</h1>
+        <p class="text-sm text-zinc-500 leading-relaxed mb-6">
+          Enter a username to sign in or create an account. Your passkey keeps it secure — no password needed.
+        </p>
+
+        <div id="step-username">
+          <div class="flex flex-col gap-1.5 mb-4">
+            <label for="username" class="text-sm font-semibold text-zinc-700">Username</label>
+            <input id="username" type="text" placeholder="yourname" autocomplete="username"
+              class="w-full px-3.5 py-2.5 border border-zinc-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow" />
+          </div>
+          <button id="btn-continue"
+            class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-lg text-[15px] transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-violet-500/30">
+            Continue →
+          </button>
+        </div>
+
+        <div id="step-passkey" class="hidden text-center">
+          <div class="text-4xl mb-3">✋</div>
+          <p class="text-sm font-semibold text-zinc-800 mb-1" id="passkey-msg">Touch your fingerprint sensor or use your device PIN</p>
+          <p class="text-xs text-zinc-400" id="passkey-sub"></p>
+          <button id="btn-retry" class="mt-4 text-sm text-violet-600 hover:underline hidden">Try again</button>
+        </div>
+
+        <div id="feedback" class="mt-4"></div>
+
+        <div class="mt-5 pt-4 border-t border-zinc-100 text-center">
+          <a href="/" class="text-sm text-zinc-400 hover:text-zinc-600 transition-colors">← Continue as guest</a>
+        </div>
+      </div>
+
+      <p class="text-center text-xs text-zinc-400 mt-4 leading-relaxed">
+        Signed-in accounts keep parties forever.<br>Guest parties expire after 6 months.
+      </p>
+    </div>
+  </div>
+</Layout>
+
+<script define:vars={{ redirect }}>
+  import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
+
+  const usernameInput = document.getElementById('username');
+  const stepUsername = document.getElementById('step-username');
+  const stepPasskey = document.getElementById('step-passkey');
+  const passKeyMsg = document.getElementById('passkey-msg');
+  const passKeySub = document.getElementById('passkey-sub');
+  const btnRetry = document.getElementById('btn-retry');
+  const feedback = document.getElementById('feedback');
+
+  function showError(msg) {
+    feedback.innerHTML = `<div class="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">${msg}</div>`;
+  }
+  function clearFeedback() { feedback.innerHTML = ''; }
+
+  async function doAuth(username) {
+    clearFeedback();
+    stepUsername.classList.add('hidden');
+    stepPasskey.classList.remove('hidden');
+
+    // Try login first
+    const loginStart = await fetch('/api/auth/login/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username }),
+    });
+
+    if (loginStart.ok) {
+      // Existing user — authenticate
+      passKeyMsg.textContent = `Welcome back, ${username}!`;
+      passKeySub.textContent = 'Use your passkey to sign in';
+      const options = await loginStart.json();
+      try {
+        const assertion = await startAuthentication({ optionsJSON: options });
+        const finish = await fetch('/api/auth/login/finish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, assertion }),
+        });
+        if (finish.ok) {
+          window.location.href = redirect;
+        } else {
+          const err = await finish.json();
+          showError(err.error || 'Sign in failed');
+          stepPasskey.classList.add('hidden');
+          stepUsername.classList.remove('hidden');
+        }
+      } catch (e) {
+        showError('Passkey cancelled or failed. ' + (e.message || ''));
+        stepPasskey.classList.add('hidden');
+        stepUsername.classList.remove('hidden');
+      }
+    } else if (loginStart.status === 404) {
+      // New user — register
+      passKeyMsg.textContent = `Creating account for "${username}"`;
+      passKeySub.textContent = 'Set up a passkey to secure your account';
+      const startRes = await fetch('/api/auth/register/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      });
+      if (!startRes.ok) {
+        const err = await startRes.json();
+        showError(err.error || 'Could not start registration');
+        stepPasskey.classList.add('hidden');
+        stepUsername.classList.remove('hidden');
+        return;
+      }
+      const options = await startRes.json();
+      try {
+        const credential = await startRegistration({ optionsJSON: options });
+        const finish = await fetch('/api/auth/register/finish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, credential }),
+        });
+        if (finish.ok) {
+          window.location.href = redirect;
+        } else {
+          const err = await finish.json();
+          showError(err.error || 'Registration failed');
+          stepPasskey.classList.add('hidden');
+          stepUsername.classList.remove('hidden');
+        }
+      } catch (e) {
+        showError('Passkey setup cancelled. ' + (e.message || ''));
+        stepPasskey.classList.add('hidden');
+        stepUsername.classList.remove('hidden');
+      }
+    } else {
+      const err = await loginStart.json();
+      showError(err.error || 'Something went wrong');
+      stepPasskey.classList.add('hidden');
+      stepUsername.classList.remove('hidden');
+    }
+  }
+
+  document.getElementById('btn-continue').addEventListener('click', async () => {
+    const username = usernameInput.value.trim().toLowerCase();
+    if (!username) { showError('Enter a username'); return; }
+    await doAuth(username);
+  });
+
+  usernameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('btn-continue').click();
+  });
+</script>

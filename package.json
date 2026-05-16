@@ -17,6 +17,8 @@
   "dependencies": {
     "@astrojs/check": "^0.9.9",
     "@astrojs/cloudflare": "^13.5.1",
+    "@simplewebauthn/browser": "^13.3.0",
+    "@simplewebauthn/server": "^13.3.0",
     "@tailwindcss/vite": "^4.3.0",
     "astro": "^6.3.3",
     "mimetext": "^3.0.28",

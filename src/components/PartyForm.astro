@@ -64,17 +64,25 @@ const { error } = Astro.props;
 
   <div class="flex flex-col gap-1.5">
     <label for="image" class="text-sm font-semibold text-zinc-700">Cover image</label>
-    <div class="border-2 border-dashed border-zinc-200 rounded-lg px-4 py-5 text-center hover:border-violet-300 transition-colors cursor-pointer" id="drop-zone">
-      <p class="text-sm text-zinc-500 mb-1">Drag &amp; drop or <label for="image" class="text-violet-600 font-semibold cursor-pointer hover:text-violet-700">browse</label></p>
+    <!-- Preview -->
+    <div id="img-preview-wrap" class="hidden relative rounded-xl overflow-hidden aspect-[2.4/1]">
+      <img id="img-preview" src="" alt="Cover preview" class="w-full h-full object-cover" />
+      <label for="image" class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity cursor-pointer text-white text-sm font-semibold">
+        Change image
+      </label>
+    </div>
+    <!-- Drop zone (hidden when preview shown) -->
+    <label for="image" id="drop-zone" class="border-2 border-dashed border-zinc-200 rounded-xl px-4 py-6 text-center hover:border-violet-300 transition-colors cursor-pointer block">
+      <div class="text-2xl mb-2">🖼</div>
+      <p class="text-sm text-zinc-500 mb-0.5">Drag &amp; drop or <span class="text-violet-600 font-semibold">browse</span></p>
       <p class="text-[12px] text-zinc-400">JPEG, PNG, WebP — max 5MB</p>
       <p class="text-[12px] text-zinc-400 mt-1">
-        Tip: generate art with AI —
+        Tip: generate with AI —
         <a href="https://github.com/pablocaminog/evite-os/blob/main/docs/image-generation-prompts.md"
-           target="_blank" class="text-violet-600 hover:underline">prompt guide →</a>
+           target="_blank" class="text-violet-600 hover:underline" onclick="event.stopPropagation()">prompt guide →</a>
       </p>
-      <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" />
-      <p id="file-name" class="text-[13px] text-violet-600 font-medium mt-2 hidden"></p>
-    </div>
+    </label>
+    <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" />
   </div>
 
   <button type="submit"
@@ -85,12 +93,16 @@ const { error } = Astro.props;
 
 <script>
   const imageInput = document.getElementById('image') as HTMLInputElement;
-  const fileNameEl = document.getElementById('file-name')!;
+  const dropZone = document.getElementById('drop-zone')!;
+  const previewWrap = document.getElementById('img-preview-wrap')!;
+  const previewImg = document.getElementById('img-preview') as HTMLImageElement;
+
   imageInput?.addEventListener('change', () => {
-    const name = imageInput.files?.[0]?.name;
-    if (name) {
-      fileNameEl.textContent = `✓ ${name}`;
-      fileNameEl.classList.remove('hidden');
-    }
+    const file = imageInput.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    previewImg.src = url;
+    previewWrap.classList.remove('hidden');
+    dropZone.classList.add('hidden');
   });
 </script>

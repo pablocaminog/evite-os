@@ -32,10 +32,11 @@ const eventDate = new Date(party.event_date).toLocaleDateString('en-US', {
 <Layout title={`${party.title} — Dashboard`}>
 
   <!-- Hero banner -->
-  <div class="relative bg-zinc-950 overflow-hidden min-h-[180px] flex items-end">
+  <div class="relative bg-zinc-950 overflow-hidden min-h-[200px] flex items-end">
     {imageUrl && (
-      <img src={imageUrl} alt="" class="absolute inset-0 w-full h-full object-cover opacity-20" />
+      <img src={imageUrl} alt="" class="absolute inset-0 w-full h-full object-cover opacity-40" />
     )}
+    <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/40 to-transparent"></div>
     <div class="relative max-w-5xl mx-auto px-6 pb-8 pt-12 w-full">
       <p class="text-violet-400 text-[12px] font-semibold uppercase tracking-widest mb-1">Your party dashboard</p>
       <h1 class="text-white text-3xl font-extrabold tracking-tight mb-1">{party.title}</h1>
@@ -58,6 +59,15 @@ const eventDate = new Date(party.event_date).toLocaleDateString('en-US', {
 
   <!-- Main content -->
   <div class="max-w-5xl mx-auto px-6 py-10">
+    {party.expires_at && (
+      <div class="mb-6 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+        <span class="text-base mt-px">⏳</span>
+        <p class="text-sm text-amber-700">
+          Guest party — expires {new Date(party.expires_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
+          <a href="/login" class="font-semibold underline hover:no-underline">Sign in</a> to keep it forever.
+        </p>
+      </div>
+    )}
     <GuestTable guests={guests} summary={summary} partyId={party.id} managementToken={token!} appUrl={env.APP_URL} />
     <InviteForm partyId={party.id} managementToken={token!} />
   </div>
