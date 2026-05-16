@@ -18,6 +18,9 @@ const sitekey = (env as any).TURNSTILE_SITE_KEY ?? '';
   <!-- explicit render mode — widget only appears after our script sets up callbacks -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer is:inline></script>
 
+  <!-- Pass server vars to module script via data attributes -->
+  <div id="login-config" data-redirect={redirect} data-sitekey={sitekey} hidden></div>
+
   <div class="min-h-[calc(100vh-56px)] flex items-center justify-center px-6 py-16">
     <div class="w-full max-w-sm">
       <div class="bg-white rounded-2xl border border-zinc-100 shadow-sm px-8 py-8">
@@ -71,20 +74,24 @@ const sitekey = (env as any).TURNSTILE_SITE_KEY ?? '';
   </div>
 </Layout>
 
-<script define:vars={{ redirect, sitekey }}>
+<script>
   import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
 
-  const usernameInput = document.getElementById('username');
-  const btnContinue  = document.getElementById('btn-continue');
-  const tsHint       = document.getElementById('ts-hint');
-  const stepUsername = document.getElementById('step-username');
-  const stepPasskey  = document.getElementById('step-passkey');
-  const passkeyMsg   = document.getElementById('passkey-msg');
-  const passkeySub   = document.getElementById('passkey-sub');
-  const feedback     = document.getElementById('feedback');
+  const cfg          = document.getElementById('login-config') as HTMLElement;
+  const redirect     = cfg.dataset.redirect ?? '/';
+  const sitekey      = cfg.dataset.sitekey ?? '';
 
-  let turnstileToken = null;
-  let widgetId = null;
+  const usernameInput = document.getElementById('username') as HTMLInputElement;
+  const btnContinue  = document.getElementById('btn-continue') as HTMLButtonElement;
+  const tsHint       = document.getElementById('ts-hint') as HTMLElement;
+  const stepUsername = document.getElementById('step-username') as HTMLElement;
+  const stepPasskey  = document.getElementById('step-passkey') as HTMLElement;
+  const passkeyMsg   = document.getElementById('passkey-msg') as HTMLElement;
+  const passkeySub   = document.getElementById('passkey-sub') as HTMLElement;
+  const feedback     = document.getElementById('feedback') as HTMLElement;
+
+  let turnstileToken: string | null = null;
+  let widgetId: string | null = null;
 
   // ── Explicit Turnstile render — callbacks are closures, no globals needed ──
   function initWidget() {
