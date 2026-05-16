@@ -92,6 +92,21 @@ export async function getPartyById(
     .first<Party>();
 }
 
+export async function getPartiesByUserId(
+  db: D1Database,
+  userId: string
+): Promise<Party[]> {
+  const res = await db
+    .prepare(
+      `SELECT * FROM parties WHERE user_id = ?
+       AND (expires_at IS NULL OR expires_at > datetime('now'))
+       ORDER BY created_at DESC`
+    )
+    .bind(userId)
+    .all<Party>();
+  return res.results;
+}
+
 export async function verifyManagementToken(
   db: D1Database,
   partyId: string,

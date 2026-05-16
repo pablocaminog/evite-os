@@ -10,7 +10,7 @@ if (sessionToken) {
   if (session) return Astro.redirect('/');
 }
 
-const redirect = Astro.url.searchParams.get('redirect') ?? '/';
+const redirect = Astro.url.searchParams.get('redirect') ?? '/my-parties';
 const sitekey = (env as any).TURNSTILE_SITE_KEY ?? '';
 ---
 

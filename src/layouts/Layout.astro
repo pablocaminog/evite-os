@@ -41,9 +41,14 @@ if (sessionToken) {
           Create party
         </a>
         {currentUser ? (
-          <div class="flex items-center gap-2">
-            <span class="text-zinc-400 text-sm hidden sm:block">{currentUser.username}</span>
-            <button id="logout-btn" class="text-zinc-500 hover:text-white text-xs transition-colors">Sign out</button>
+          <div class="flex items-center gap-3">
+            <a href="/my-parties" class="text-zinc-400 hover:text-white text-sm transition-colors hidden sm:block">
+              {currentUser.username}
+            </a>
+            <a href="/my-parties" class="text-zinc-400 hover:text-white text-sm transition-colors sm:hidden">
+              My parties
+            </a>
+            <button id="logout-btn" class="text-zinc-500 hover:text-zinc-300 text-xs transition-colors">Sign out</button>
           </div>
         ) : (
           <a href="/login" class="text-zinc-400 hover:text-white text-sm transition-colors">Sign in</a>
