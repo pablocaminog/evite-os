@@ -10,6 +10,15 @@ export const POST: APIRoute = async (context) => {
   try {
     const body = await context.request.json() as { username: string; turnstileToken?: string };
 
+    const clean = body.username?.trim().toLowerCase();
+    if (!clean) return Response.json({ error: 'username required' }, { status: 422 });
+
+    // Check existence BEFORE consuming the Turnstile token — single-use tokens
+    // must be preserved for register/start when the user doesn't exist yet.
+    const user = await getUserByUsername(env.DB, clean);
+    if (!user) return Response.json({ error: 'No account found' }, { status: 404 });
+
+    // User exists — now safe to consume the token
     const ts = await verifyTurnstile(
       (env as any).TURNSTILE_SECRET_KEY,
       body.turnstileToken,
@@ -18,12 +27,6 @@ export const POST: APIRoute = async (context) => {
     if (!ts.success) {
       return Response.json({ error: 'Human verification failed. Please try again.' }, { status: 403 });
     }
-
-    const clean = body.username?.trim().toLowerCase();
-    if (!clean) return Response.json({ error: 'username required' }, { status: 422 });
-
-    const user = await getUserByUsername(env.DB, clean);
-    if (!user) return Response.json({ error: 'No account found' }, { status: 404 });
 
     const creds = await getCredentialsByUserId(env.DB, user.id);
     if (!creds.length) return Response.json({ error: 'No passkeys registered' }, { status: 404 });
