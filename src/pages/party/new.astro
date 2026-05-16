@@ -63,9 +63,10 @@ import PartyForm from '../../components/PartyForm.astro';
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    const json = await res.json();
+    let json: any = {};
+    try { json = await res.json(); } catch { /* empty body */ }
     if (!res.ok) {
-      alert(json.error);
+      alert(json.error ?? `Server error ${res.status}`);
       btn.textContent = 'Create party →';
       btn.disabled = false;
       return;
